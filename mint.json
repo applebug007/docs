@@ -20,16 +20,12 @@
   ],
   "tabs": [
     {
-      "name": "Home",
-      "url": "home"
-    },
-    {
-      "name": "API Reference",
-      "url": "api-reference"
+      "name": "Changelog",
+      "url": "updates"
     }
   ],
   "primaryTab": {
-    "name": "Home"
+    "name": "API Reference"
   },
   "anchors": [
     {
@@ -55,23 +51,16 @@
   ],
   "navigation": [
     {
-      "group": "Get Started",
-      "pages": ["home", "quickstart", "development"]
-    },
-    {
-      "group": "Essentials",
-      "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
-      ]
+      "group": "API Documentation",
+      "pages": ["introduction"]
     },
     {
       "group": "Endpoint",
       "pages": ["api-reference/endpoint/predict"]
+    },
+    {
+      "group": "",
+      "pages": ["updates/changelog"]
     }
   ],
   "footerSocials": {
