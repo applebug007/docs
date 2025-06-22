@@ -1,0 +1,85 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Scam AI",
+  "colors": {
+    "primary": "#000000",
+    "light": "#dbdbdb",
+    "dark": "#000000"
+  },
+  "favicon": "/logo/favicon.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Documentation",
+            "pages": [
+              "introduction"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
+              {
+                "group": "Attack APIs",
+                "pages": [
+                  "api-reference/endpoint/faceswap-attack",
+                  "api-reference/endpoint/voice-clone-attack"
+                ]
+              },
+              {
+                "group": "Defence APIs",
+                "pages": [
+                  "api-reference/endpoint/faceswap-detection",
+                  "api-reference/endpoint/voice-clone-detection",
+                  "api-reference/endpoint/document-fraud-detection",
+                  "api-reference/endpoint/ai-content-detection",
+                  "api-reference/endpoint/ai-agent"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "",
+            "pages": [
+              "updates/changelog"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Blog",
+          "href": "https://www.scam.ai/blog",
+          "icon": "newspaper"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "https://www.scam.ai/contact"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/scamai173025"
+    }
+  }
+}

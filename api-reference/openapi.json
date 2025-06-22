@@ -15,7 +15,7 @@
   ],
   "security": [
     {
-      "apiKeyAuth": []
+      "BearerAuth": []
     }
   ],
   "paths": {
@@ -116,6 +116,251 @@
                       "description": "Error message indicating that the request is unauthorized."
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+     "/faceswap/attack": {
+      "post": {
+        "summary": "Simulate Faceswap Attack",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaceSwapAttackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Faceswap result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaceSwapAttackResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/voice/attack": {
+      "post": {
+        "summary": "Clone voice from sample and text",
+        "description": "Takes an uploaded voice sample and synthesizes speech from the given text.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "audioFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Input audio file (e.g. .mp3 or .wav)"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Text to synthesize using the cloned voice"
+                  }
+                },
+                "required": ["audioFile", "text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Voice cloning result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Voice cloning successful"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "audio": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "base64"
+                            },
+                            "payload": {
+                              "type": "string",
+                              "format": "byte",
+                              "description": "Base64-encoded synthesized audio"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "type": "object",
+                          "properties": {
+                            "size_bytes": {
+                              "type": "integer",
+                              "example": 11329
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/faceswap/detect": {
+      "post": {
+        "summary": "Detect Faceswap in Image",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detection result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetectionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/voice/detect": {
+      "post": {
+        "summary": "Detect Voice Deepfake",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detection result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetectionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/document/detect": {
+      "post": {
+        "summary": "Detect Fraud in Document",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentDetectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fraud detection result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDetectionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-content/detect": {
+      "post": {
+        "summary": "Detect AI-Generated Text",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIContentDetectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI content detection result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIContentDetectionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-agent/process": {
+      "post": {
+        "summary": "Process AI Agent Audio Call",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIAgentProcessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI agent response result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIAgentProcessResponse"
                 }
               }
             }
@@ -236,6 +481,659 @@
   },
   "components": {
     "schemas": {
+      "FaceSwapAttackRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "example": "{{sampleImageBase64}}"
+              },
+              "target_face": {
+                "type": "string",
+                "example": "{{sampleImageBase64}}"
+              }
+            },
+            "required": ["source", "target_face"]
+          },
+          "task_id": {
+            "type": "string",
+            "example": "swap-test-1749686174"
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "quality": {
+                "type": "string",
+                "example": "high"
+              },
+              "blend_ratio": {
+                "type": "number",
+                "format": "float",
+                "example": 0.85
+              }
+            }
+          }
+        },
+        "required": ["data", "task_id", "usecase_environment"]
+      },
+      "FaceSwapAttackResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ai_model_info": {
+            "type": "object",
+            "properties": {
+              "model_name": {
+                "type": "string",
+                "example": "inswapper_cyn"
+              },
+              "model_version": {
+                "type": "string",
+                "example": "v1.0"
+              }
+            }
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "example": "image"
+              },
+              "payload": {
+                "type": "string",
+                "format": "uri",
+                "example": "https://example.com/results/faceswap_output_001.jpg"
+              }
+            }
+          }
+        }
+      },
+      "VoiceCloneAttackRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "voice_sample": {
+                "type": "string",
+                "example": "{{sampleAudioBase64}}"
+              },
+              "text_to_synthesize": {
+                "type": "string",
+                "example": "Hello, this is a test of the voice cloning technology for security testing purposes."
+              }
+            },
+            "required": ["voice_sample", "text_to_synthesize"]
+          },
+          "task_id": {
+            "type": "string",
+            "example": "voice-clone-test-1749686183"
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "sample_rate": {
+                "type": "integer",
+                "example": 24000
+              },
+              "language": {
+                "type": "string",
+                "example": "en-US"
+              },
+              "voice_enhancement": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          }
+        },
+        "required": ["data", "task_id", "usecase_environment"]
+      },
+      "VoiceCloneAttackResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "detection_result": {
+            "type": "object",
+            "properties": {
+              "cloned": {
+                "type": "boolean",
+                "example": true
+              },
+              "confidence_score": {
+                "type": "number",
+                "format": "float",
+                "example": 1
+              },
+              "ai_response": {
+                "type": "object",
+                "properties": {
+                  "synthesis_latency_ms": {
+                    "type": "integer",
+                    "example": 2000
+                  }
+                }
+              }
+            }
+          },
+          "ai_model_info": {
+            "type": "object",
+            "properties": {
+              "model_name": {
+                "type": "string",
+                "example": "VoiceCloner-Pro"
+              },
+              "model_version": {
+                "type": "string",
+                "example": "v2.1"
+              }
+            }
+          },
+          "usecase_environment": {
+            "$ref": "#/components/schemas/VoiceCloneAttackRequest/properties/usecase_environment"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "audio": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "base64"
+                  },
+                  "payload": {
+                    "type": "string",
+                    "example": "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA..."
+                  }
+                }
+              },
+              "meta": {
+                "type": "object",
+                "properties": {
+                  "duration_ms": {
+                    "type": "integer",
+                    "example": 1500
+                  },
+                  "size_bytes": {
+                    "type": "integer",
+                    "example": 345678
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DetectionRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "example": "base64"
+              },
+              "payload": {
+                "type": "string",
+                "example": "{{sampleImageBase64}}"
+              }
+            },
+            "required": ["type", "payload"]
+          },
+          "task_id": {
+            "type": "string",
+            "example": "detect-faceswap-1749686204"
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "detection_threshold": {
+                "type": "number",
+                "format": "float",
+                "example": 0.8
+              },
+              "analysis_mode": {
+                "type": "string",
+                "example": "comprehensive"
+              }
+            }
+          }
+        },
+        "required": ["data", "task_id", "usecase_environment"]
+      },
+      "DetectionResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "detection_result": {
+            "type": "object",
+            "properties": {
+              "overall_status": {
+                "type": "string",
+                "example": "NOT_DETECTED"
+              },
+              "overall_confidence_score": {
+                "type": "number",
+                "format": "float",
+                "example": 0.67
+              },
+              "face_detections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "filter_prob": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "faceswap_prob": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "bounding_box": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "example": [30, 60, 130, 180]
+                    }
+                  }
+                }
+              },
+              "ai_response": {
+                "type": "object",
+                "properties": {
+                  "analysis_latency_ms": {
+                    "type": "integer",
+                    "example": 1280
+                  },
+                  "faces_analyzed_count": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "notes": {
+                    "type": "string",
+                    "example": "Multiple faces analyzed. No significant faceswap indicators."
+                  }
+                }
+              }
+            }
+          },
+          "ai_model_info": {
+            "type": "object",
+            "properties": {
+              "model_name": {
+                "type": "string",
+                "example": "FaceSwapDetector"
+              },
+              "model_version": {
+                "type": "string",
+                "example": "v1.2.0"
+              }
+            }
+          },
+          "usecase_environment_processed": {
+            "type": "object",
+            "properties": {
+              "detection_threshold": {
+                "type": "number",
+                "format": "float"
+              },
+              "zoom_level": {
+                "type": "integer",
+                "example": 1
+              }
+            }
+          }
+        }
+      },
+      "DocumentDetectionRequest": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://example.com/sample-document.jpg"
+          },
+          "task_id": {
+            "type": "string",
+            "example": "detect-fraud-1749686221"
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "document_type": {
+                "type": "string",
+                "example": "identity"
+              },
+              "detection_threshold": {
+                "type": "number",
+                "format": "float",
+                "example": 0.8
+              },
+              "metadata_analysis": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          }
+        },
+        "required": ["image_url", "task_id", "usecase_environment"]
+      },
+      "DocumentDetectionResponse": {
+        "type": "object",
+        "properties": {
+          "detections": {
+            "type": "object",
+            "properties": {
+              "meta-data": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "confidence_score": {
+                "type": "number",
+                "format": "float",
+                "example": 0.99
+              },
+              "ai_response": {
+                "type": "string",
+                "example": "Metadata analysis reveals inconsistencies suggesting potential tampering."
+              }
+            }
+          },
+          "ai_model_info": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "example": "v1.2.0"
+              },
+              "model_name": {
+                "type": "string",
+                "example": "DocumentFraudDetector"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "detection_threshold": {
+                "type": "number"
+              },
+              "document_type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "AIContentDetectionRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "example": "text"
+              },
+              "payload": {
+                "type": "string",
+                "example": "This is a sample text that may have been generated by an AI system."
+              }
+            }
+          },
+          "task_id": {
+            "type": "string",
+            "example": "detect-ai-content-1749686221"
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "threshold": {
+                "type": "number",
+                "format": "float",
+                "example": 0.5
+              },
+              "analysis_mode": {
+                "type": "string",
+                "example": "comprehensive"
+              },
+              "content_category": {
+                "type": "string",
+                "example": "article"
+              }
+            }
+          }
+        },
+        "required": ["data", "task_id", "usecase_environment"]
+      },
+      "AIContentDetectionResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "confidence_score": {
+                "type": "number",
+                "format": "float"
+              },
+              "is_ai_generated": {
+                "type": "boolean"
+              },
+              "analysis_details": {
+                "type": "object",
+                "properties": {
+                  "content_type": {
+                    "type": "string"
+                  },
+                  "processing_time_ms": {
+                    "type": "integer"
+                  },
+                  "model_certainty": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "ai_model_info": {
+            "type": "object",
+            "properties": {
+              "model_name": {
+                "type": "string"
+              },
+              "model_version": {
+                "type": "string"
+              }
+            }
+          },
+          "usecase_environment_processed": {
+            "type": "object",
+            "properties": {
+              "threshold": {
+                "type": "number"
+              },
+              "analysis_mode": {
+                "type": "string"
+              },
+              "content_category": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "AIAgentProcessRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "audio_chunk_base64": {
+                "type": "string",
+                "example": "{{sampleAudioBase64}}"
+              },
+              "call_id": {
+                "type": "string",
+                "example": "test-call-1749686197"
+              },
+              "turn_sequence_id": {
+                "type": "integer",
+                "example": 1
+              }
+            }
+          },
+          "task_id": {
+            "type": "string",
+            "example": "ai-agent-test-1749686197"
+          },
+          "usecase_environment": {
+            "type": "object",
+            "properties": {
+              "language_code": {
+                "type": "string",
+                "example": "en-US"
+              },
+              "call_type": {
+                "type": "string",
+                "example": "security_test"
+              },
+              "agent_mode": {
+                "type": "string",
+                "example": "defensive"
+              }
+            }
+          }
+        },
+        "required": ["data", "task_id", "usecase_environment"]
+      },
+      "AIAgentProcessResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "call_id": {
+            "type": "string"
+          },
+          "turn_sequence_id": {
+            "type": "integer"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "detection_result": {
+            "type": "object",
+            "properties": {
+              "caller_transcript": {
+                "type": "string"
+              },
+              "call_classification": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "confidence_score": {
+                    "type": "number",
+                    "format": "float"
+                  }
+                }
+              },
+              "ai_agent_response": {
+                "type": "object",
+                "properties": {
+                  "text_to_speak": {
+                    "type": "string"
+                  },
+                  "audio_to_play_base64": {
+                    "type": "string"
+                  },
+                  "response_audio_format": {
+                    "type": "object",
+                    "properties": {
+                      "codec": {
+                        "type": "string"
+                      },
+                      "sample_rate_hz": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ai_model_info": {
+            "type": "object",
+            "properties": {
+              "asr_model_id": {
+                "type": "string"
+              },
+              "llm_model_id": {
+                "type": "string"
+              },
+              "tts_model_id": {
+                "type": "string"
+              },
+              "agent_pipeline_version": {
+                "type": "string"
+              }
+            }
+          },
+          "usecase_environment_processed": {
+            "type": "object",
+            "properties": {
+              "language_code": {
+                "type": "string"
+              },
+              "call_type": {
+                "type": "string"
+              },
+              "agent_mode": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
       "Plant": {
         "required": ["name"],
         "type": "object",
@@ -282,11 +1180,11 @@
         }
       }
     },
-    "securitySchemes": {
-      "apiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-api-key"
+     "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }
