@@ -23,13 +23,6 @@
             "group": "APIs",
             "pages": [
               {
-                "group": "Attack APIs",
-                "pages": [
-                  "api-reference/endpoint/faceswap-attack",
-                  "api-reference/endpoint/voice-clone-attack"
-                ]
-              },
-              {
                 "group": "Defence APIs",
                 "pages": [
                   "api-reference/endpoint/faceswap-detection",
@@ -37,6 +30,13 @@
                   "api-reference/endpoint/document-fraud-detection",
                   "api-reference/endpoint/ai-content-detection",
                   "api-reference/endpoint/ai-agent"
+                ]
+              },
+              {
+                "group": "Attack APIs",
+                "pages": [
+                  "api-reference/endpoint/faceswap-attack",
+                  "api-reference/endpoint/voice-clone-attack"
                 ]
               }
             ]
@@ -61,6 +61,11 @@
           "anchor": "Blog",
           "href": "https://www.scam.ai/blog",
           "icon": "newspaper"
+        },
+        {
+          "anchor": "LinkedIn",
+          "href": "https://www.linkedin.com/company/scam-ai",
+          "icon": "linkedin"
         }
       ]
     }
@@ -79,7 +84,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/scamai173025"
+      "x": "https://x.com/scamai173025",
+      "linkedin": "https://www.linkedin.com/company/scam-ai"
     }
   }
 }
