@@ -1,0 +1,647 @@
+---
+title: 'Voice Clone Detection Implementation'
+description: 'Learn how to implement voice clone detection in your applications with our comprehensive API and best practices'
+---
+
+# Voice Clone Detection Implementation
+
+Implement advanced voice clone detection to protect against synthetic speech and audio impersonation attacks. Our detection system provides high accuracy analysis for both real-time and batch processing scenarios.
+
+## Quick Start
+
+Get started with voice clone detection in just a few steps:
+
+### 1. **Upload and Analyze**
+
+```bash
+POST /api/voice/upload-detect
+```
+
+Upload audio files directly for analysis:
+
+```json
+{
+  "audio_data": "base64_encoded_audio_data",
+  "format": "wav",
+  "sample_rate": 44100,
+  "analysis_options": {
+    "detailed_report": true,
+    "confidence_threshold": 0.8,
+    "language": "en"
+  }
+}
+```
+
+### 2. **Direct Audio Analysis**
+
+```bash
+POST /api/voice/detect
+```
+
+Analyze audio content directly:
+
+```json
+{
+  "audio_url": "https://example.com/audio.wav",
+  "speaker_reference": "optional_reference_audio",
+  "callback_url": "https://your-app.com/webhook"
+}
+```
+
+### 3. **Real-time Stream Analysis**
+
+```bash
+WebSocket: wss://api.scam.ai/voice/stream
+```
+
+Analyze live audio streams:
+
+```json
+{
+  "stream_id": "call_12345",
+  "audio_chunk": "base64_encoded_audio_chunk",
+  "timestamp": 1647123456789,
+  "speaker_id": "speaker_1"
+}
+```
+
+## Detection Features
+
+### Comprehensive Audio Analysis
+
+<CardGroup cols={2}>
+  <Card
+    title="Spectral Analysis"
+    icon="chart-line"
+  >
+    Examine frequency patterns and harmonic structures unique to natural speech
+  </Card>
+  <Card
+    title="Prosodic Analysis"
+    icon="music"
+  >
+    Analyze speech rhythm, stress patterns, and natural timing variations
+  </Card>
+  <Card
+    title="Glottal Analysis"
+    icon="waveform-lines"
+  >
+    Detect vocal cord vibration patterns that are difficult to synthesize
+  </Card>
+  <Card
+    title="Temporal Consistency"
+    icon="clock"
+  >
+    Identify unnatural timing and rhythm patterns in synthetic speech
+  </Card>
+</CardGroup>
+
+### Advanced Detection Methods
+
+#### **Multi-layered Analysis**
+Our system employs multiple detection layers:
+
+- **Frequency Domain Analysis**: Identify synthetic artifacts in spectrograms
+- **Time Domain Features**: Analyze waveform characteristics and patterns
+- **Cepstral Analysis**: Examine vocal tract characteristics through MFCCs
+- **Neural Network Features**: Deep learning-based pattern recognition
+- **Linguistic Analysis**: Study speaking patterns and pronunciation consistency
+
+#### **Real-time Processing**
+Optimized for live audio analysis:
+
+- **Streaming Analysis**: Process audio chunks as they arrive
+- **Low Latency**: Results in under 200ms for real-time applications
+- **Adaptive Buffering**: Intelligent audio buffering for optimal accuracy
+- **Continuous Learning**: Models adapt to new voice cloning techniques
+
+## Implementation Guide
+
+### Authentication and Setup
+
+Configure your API authentication:
+
+<CodeGroup>
+  ```bash cURL
+  curl -X POST https://api.scam.ai/voice/detect \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "audio_url": "https://example.com/audio.wav",
+      "analysis_depth": "comprehensive"
+    }'
+  ```
+
+  ```javascript Node.js
+  const axios = require('axios');
+
+  class VoiceCloneDetector {
+    constructor(apiKey) {
+      this.apiKey = apiKey;
+      this.baseUrl = 'https://api.scam.ai';
+    }
+
+    async detectVoiceClone(audioData, options = {}) {
+      try {
+        const response = await axios.post(`${this.baseUrl}/voice/detect`, {
+          audio_data: audioData,
+          analysis_options: {
+            confidence_threshold: options.threshold || 0.8,
+            detailed_report: true,
+            language: options.language || 'en'
+          }
+        }, {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        return this.processResults(response.data);
+      } catch (error) {
+        console.error('Voice clone detection failed:', error);
+        throw error;
+      }
+    }
+
+    processResults(results) {
+      const { is_synthetic, confidence_score, analysis_results } = results;
+      
+      return {
+        isSynthetic: is_synthetic,
+        confidence: confidence_score,
+        details: analysis_results,
+        recommendation: this.getRecommendation(confidence_score)
+      };
+    }
+
+    getRecommendation(confidence) {
+      if (confidence > 0.9) return 'High confidence synthetic - block immediately';
+      if (confidence > 0.7) return 'Likely synthetic - require additional verification';
+      if (confidence > 0.5) return 'Suspicious - manual review recommended';
+      return 'Likely authentic - proceed with caution';
+    }
+  }
+  ```
+
+  ```python Python
+  import requests
+  import base64
+  import json
+
+  class VoiceCloneDetector:
+      def __init__(self, api_key):
+          self.api_key = api_key
+          self.base_url = 'https://api.scam.ai'
+          self.headers = {
+              'Authorization': f'Bearer {api_key}',
+              'Content-Type': 'application/json'
+          }
+
+      def detect_voice_clone(self, audio_file_path, **kwargs):
+          # Read and encode audio file
+          with open(audio_file_path, 'rb') as audio_file:
+              audio_data = base64.b64encode(audio_file.read()).decode('utf-8')
+
+          payload = {
+              'audio_data': audio_data,
+              'analysis_options': {
+                  'confidence_threshold': kwargs.get('threshold', 0.8),
+                  'detailed_report': True,
+                  'language': kwargs.get('language', 'en'),
+                  'real_time': kwargs.get('real_time', False)
+              }
+          }
+
+          response = requests.post(
+              f'{self.base_url}/voice/detect',
+              headers=self.headers,
+              json=payload
+          )
+
+          if response.status_code == 200:
+              return self.process_results(response.json())
+          else:
+              raise Exception(f'Detection failed: {response.text}')
+
+      def process_results(self, results):
+          return {
+              'is_synthetic': results['is_synthetic'],
+              'confidence': results['confidence_score'],
+              'analysis': results['analysis_results'],
+              'recommendation': self.get_recommendation(results['confidence_score'])
+          }
+
+      def get_recommendation(self, confidence):
+          if confidence > 0.9:
+              return 'High confidence synthetic - block immediately'
+          elif confidence > 0.7:
+              return 'Likely synthetic - require additional verification'
+          elif confidence > 0.5:
+              return 'Suspicious - manual review recommended'
+          else:
+              return 'Likely authentic - proceed with caution'
+  ```
+</CodeGroup>
+
+### Response Handling
+
+The API returns comprehensive detection results:
+
+```json
+{
+  "detection_id": "vc_67890",
+  "is_synthetic": true,
+  "confidence_score": 0.91,
+  "processing_time": 0.8,
+  "analysis_results": {
+    "voice_clone_detected": true,
+    "synthesis_method": "neural_vocoder",
+    "quality_assessment": {
+      "overall_quality": "high",
+      "naturalness_score": 0.76,
+      "artifacts_detected": ["spectral_leakage", "phase_discontinuity"]
+    },
+    "spectral_analysis": {
+      "anomalies_detected": 0.88,
+      "formant_irregularities": 0.82,
+      "harmonic_distortion": 0.74,
+      "frequency_artifacts": ["unnatural_f0", "missing_harmonics"]
+    },
+    "prosodic_analysis": {
+      "rhythm_irregularities": 0.84,
+      "stress_pattern_anomalies": 0.79,
+      "intonation_artifacts": 0.86,
+      "timing_inconsistencies": ["pause_irregularities", "syllable_timing"]
+    },
+    "glottal_analysis": {
+      "glottal_flow_anomalies": 0.93,
+      "voice_source_irregularities": 0.87,
+      "vocal_cord_simulation_artifacts": 0.89
+    }
+  },
+  "temporal_analysis": [
+    {
+      "segment_start": 0.0,
+      "segment_end": 2.5,
+      "confidence": 0.94,
+      "anomaly_types": ["spectral_artifacts", "prosodic_irregularities"]
+    }
+  ],
+  "speaker_analysis": {
+    "reference_match": false,
+    "similarity_score": 0.23,
+    "voice_characteristics": {
+      "fundamental_frequency": "altered",
+      "formant_structure": "synthetic",
+      "vocal_tract_modeling": "artificial"
+    }
+  },
+  "metadata": {
+    "audio_duration": 15.3,
+    "sample_rate": 44100,
+    "channels": 1,
+    "format": "wav",
+    "quality_metrics": {
+      "snr": 28.5,
+      "clarity": 0.92
+    }
+  }
+}
+```
+
+## Real-time Integration
+
+### WebSocket Implementation
+
+Implement real-time voice clone detection for live calls:
+
+```javascript
+class RealtimeVoiceDetection {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.ws = null;
+    this.audioBuffer = [];
+    this.isConnected = false;
+  }
+
+  connect() {
+    this.ws = new WebSocket('wss://api.scam.ai/voice/stream', {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`
+      }
+    });
+
+    this.ws.on('open', () => {
+      console.log('Connected to real-time voice detection');
+      this.isConnected = true;
+      this.startConfiguration();
+    });
+
+    this.ws.on('message', (data) => {
+      const result = JSON.parse(data);
+      this.handleDetectionResult(result);
+    });
+
+    this.ws.on('close', () => {
+      this.isConnected = false;
+      this.handleDisconnection();
+    });
+  }
+
+  startConfiguration() {
+    this.ws.send(JSON.stringify({
+      type: 'config',
+      settings: {
+        confidence_threshold: 0.8,
+        real_time_alerts: true,
+        buffer_size: 1024,
+        analysis_interval: 500
+      }
+    }));
+  }
+
+  analyzeAudioChunk(audioChunk, timestamp, speakerId) {
+    if (this.isConnected) {
+      this.ws.send(JSON.stringify({
+        type: 'audio',
+        stream_id: `call_${Date.now()}`,
+        audio_chunk: audioChunk,
+        timestamp: timestamp,
+        speaker_id: speakerId,
+        format: 'pcm_16_44100'
+      }));
+    }
+  }
+
+  handleDetectionResult(result) {
+    if (result.type === 'detection') {
+      const { is_synthetic, confidence_score, speaker_id } = result;
+      
+      if (is_synthetic && confidence_score > 0.8) {
+        this.triggerAlert({
+          type: 'voice_clone_detected',
+          confidence: confidence_score,
+          speaker: speaker_id,
+          timestamp: result.timestamp,
+          details: result.analysis_summary
+        });
+      }
+    }
+  }
+
+  triggerAlert(alertData) {
+    console.warn('Voice clone detected:', alertData);
+    // Implement your alert logic here
+    // e.g., notify security team, log incident, take protective action
+  }
+}
+```
+
+### Live Call Monitoring
+
+Implement continuous monitoring for phone calls:
+
+```javascript
+class CallMonitor {
+  constructor(detector) {
+    this.detector = detector;
+    this.activeCalls = new Map();
+    this.alertThreshold = 0.8;
+  }
+
+  startCall(callId, participants) {
+    const callData = {
+      id: callId,
+      participants: participants,
+      startTime: Date.now(),
+      alerts: [],
+      audioStream: null
+    };
+
+    this.activeCalls.set(callId, callData);
+    this.setupAudioCapture(callId);
+  }
+
+  setupAudioCapture(callId) {
+    // Setup audio capture from call system
+    const audioStream = this.getCallAudioStream(callId);
+    
+    audioStream.on('data', (audioChunk) => {
+      this.processAudioChunk(callId, audioChunk);
+    });
+  }
+
+  async processAudioChunk(callId, audioChunk) {
+    try {
+      const result = await this.detector.analyzeChunk(audioChunk);
+      
+      if (result.is_synthetic && result.confidence > this.alertThreshold) {
+        this.handleVoiceCloneAlert(callId, result);
+      }
+    } catch (error) {
+      console.error('Audio analysis failed:', error);
+    }
+  }
+
+  handleVoiceCloneAlert(callId, detection) {
+    const callData = this.activeCalls.get(callId);
+    
+    const alert = {
+      timestamp: Date.now(),
+      confidence: detection.confidence,
+      details: detection.analysis,
+      action: this.determineAction(detection.confidence)
+    };
+
+    callData.alerts.push(alert);
+
+    // Take immediate action based on confidence
+    if (detection.confidence > 0.95) {
+      this.terminateCall(callId, 'High confidence voice clone detected');
+    } else if (detection.confidence > 0.85) {
+      this.flagCall(callId, 'Suspicious voice detected - manual review required');
+    }
+  }
+
+  determineAction(confidence) {
+    if (confidence > 0.95) return 'terminate_call';
+    if (confidence > 0.85) return 'flag_for_review';
+    if (confidence > 0.7) return 'increase_monitoring';
+    return 'continue_monitoring';
+  }
+}
+```
+
+## Advanced Configuration
+
+### Customizable Detection Parameters
+
+Fine-tune detection for your specific use case:
+
+```json
+{
+  "audio_url": "https://example.com/audio.wav",
+  "analysis_options": {
+    "confidence_threshold": 0.8,
+    "analysis_depth": "comprehensive",
+    "language": "en-US",
+    "accent_consideration": true,
+    "noise_tolerance": "medium",
+    "real_time_mode": false,
+    "speaker_verification": {
+      "enabled": true,
+      "reference_audio": "base64_encoded_reference",
+      "similarity_threshold": 0.85
+    },
+    "technical_analysis": {
+      "spectral_analysis": true,
+      "prosodic_analysis": true,
+      "glottal_analysis": true,
+      "temporal_analysis": true
+    },
+    "output_options": {
+      "include_spectrograms": false,
+      "include_confidence_timeline": true,
+      "detailed_artifacts": true,
+      "segment_analysis": true
+    }
+  }
+}
+```
+
+### Batch Processing
+
+Process multiple audio files efficiently:
+
+```json
+{
+  "batch_id": "voice_batch_123",
+  "audio_files": [
+    {
+      "id": "audio_1",
+      "audio_data": "base64_encoded_audio_1",
+      "metadata": {
+        "speaker": "john_doe",
+        "context": "phone_call",
+        "duration": 30.5
+      }
+    },
+    {
+      "id": "audio_2",
+      "audio_data": "base64_encoded_audio_2", 
+      "metadata": {
+        "speaker": "jane_smith",
+        "context": "video_conference",
+        "duration": 45.2
+      }
+    }
+  ],
+  "callback_url": "https://your-app.com/batch-results",
+  "processing_priority": "high"
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Confidence Threshold Selection">
+    Choose appropriate thresholds based on your security requirements:
+    - **High Security (0.9+)**: Financial institutions, legal evidence
+    - **Balanced (0.7-0.9)**: Corporate communications, customer service
+    - **Permissive (0.5-0.7)**: General content moderation, research applications
+  </Accordion>
+
+  <Accordion title="Real-time Optimization">
+    Optimize for real-time performance:
+    - Use appropriate buffer sizes (512-2048 samples)
+    - Implement efficient audio preprocessing
+    - Balance accuracy vs. latency requirements
+    - Use streaming analysis for long conversations
+  </Accordion>
+
+  <Accordion title="Multi-language Support">
+    Handle diverse language requirements:
+    - Specify language codes for better accuracy
+    - Consider accent variations within languages
+    - Use language detection for unknown audio
+    - Implement fallback detection for unsupported languages
+  </Accordion>
+
+  <Accordion title="Integration Security">
+    Ensure secure implementation:
+    - Encrypt audio data in transit and at rest
+    - Implement proper API key management
+    - Use HTTPS/WSS for all communications
+    - Log detection events for audit trails
+  </Accordion>
+</AccordionGroup>
+
+## Performance Monitoring
+
+Track system performance and optimize:
+
+```javascript
+class VoiceDetectionMetrics {
+  constructor() {
+    this.metrics = {
+      totalRequests: 0,
+      averageLatency: 0,
+      accuracyRate: 0,
+      falsePositiveRate: 0
+    };
+  }
+
+  recordDetection(latency, accuracy, falsePositive) {
+    this.metrics.totalRequests++;
+    this.metrics.averageLatency = this.updateAverage(
+      this.metrics.averageLatency, 
+      latency, 
+      this.metrics.totalRequests
+    );
+    
+    if (accuracy !== null) {
+      this.metrics.accuracyRate = this.updateAverage(
+        this.metrics.accuracyRate,
+        accuracy,
+        this.metrics.totalRequests
+      );
+    }
+    
+    if (falsePositive) {
+      this.metrics.falsePositiveRate = this.updateAverage(
+        this.metrics.falsePositiveRate,
+        1,
+        this.metrics.totalRequests
+      );
+    }
+  }
+
+  updateAverage(currentAvg, newValue, count) {
+    return ((currentAvg * (count - 1)) + newValue) / count;
+  }
+
+  getMetrics() {
+    return { ...this.metrics };
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Health Check Setup"
+    icon="heart-pulse"
+    href="/voice-clone/health-check"
+  >
+    Monitor your voice detection system's health and performance
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/voice/detect"
+  >
+    Complete API documentation with all parameters and examples
+  </Card>
+</CardGroup> 

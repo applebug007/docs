@@ -1,0 +1,519 @@
+---
+title: 'Deepfake Detection Implementation'
+description: 'Learn how to implement deepfake detection in your applications with our comprehensive API and best practices'
+---
+
+# Deepfake Detection Implementation
+
+Implement state-of-the-art deepfake detection in your applications to protect against AI-generated face swap videos and manipulated media. Our detection system provides high accuracy, real-time analysis, and easy integration.
+
+## Quick Start
+
+Get started with deepfake detection in just a few steps:
+
+### 1. **Upload and Analyze**
+
+```bash
+POST /api/faceswap/upload-detect
+```
+
+Upload media files directly for analysis:
+
+```json
+{
+  "file": "base64_encoded_media_data",
+  "media_type": "video",
+  "analysis_options": {
+    "detailed_report": true,
+    "frame_by_frame": true,
+    "confidence_threshold": 0.7
+  }
+}
+```
+
+### 2. **URL-based Analysis**
+
+```bash
+POST /api/faceswap/detect
+```
+
+Analyze media from URLs:
+
+```json
+{
+  "media_url": "https://example.com/video.mp4",
+  "callback_url": "https://your-app.com/webhook",
+  "priority": "high"
+}
+```
+
+### 3. **Real-time Stream Analysis**
+
+```bash
+WebSocket: wss://api.scam.ai/faceswap/stream
+```
+
+Analyze live video streams in real-time:
+
+```json
+{
+  "stream_id": "unique_stream_identifier",
+  "frame_data": "base64_encoded_frame",
+  "timestamp": 1647123456789
+}
+```
+
+## Detection Features
+
+### Comprehensive Analysis
+
+<CardGroup cols={2}>
+  <Card
+    title="Face Swap Detection"
+    icon="arrow-right-arrow-left"
+  >
+    Identify when faces have been digitally replaced in videos or images
+  </Card>
+  <Card
+    title="Temporal Consistency"
+    icon="clock"
+  >
+    Analyze frame-to-frame changes for unnatural temporal patterns
+  </Card>
+  <Card
+    title="Facial Landmarks"
+    icon="map-pin"
+  >
+    Examine facial feature positioning and movement anomalies
+  </Card>
+  <Card
+    title="Compression Artifacts"
+    icon="image"
+  >
+    Detect unique patterns left by deepfake generation algorithms
+  </Card>
+</CardGroup>
+
+### Advanced Detection Methods
+
+#### **Biological Signal Analysis**
+Our system detects missing or irregular biological signals that are difficult to replicate in deepfakes:
+
+- **Pulse Detection**: Identify subtle color changes from blood flow
+- **Breathing Patterns**: Analyze natural respiratory movements
+- **Micro-expressions**: Detect authentic involuntary facial expressions
+- **Eye Movement**: Examine natural blinking and saccadic movements
+
+#### **Neural Network Fingerprinting**
+Identify specific AI models used for generation:
+
+- **Architecture Detection**: Recognize generation model signatures
+- **Training Data Patterns**: Identify dataset-specific artifacts
+- **Version Identification**: Distinguish between model versions
+- **Custom Model Recognition**: Detect fine-tuned or modified models
+
+## Implementation Guide
+
+### Authentication Setup
+
+First, configure your API authentication:
+
+<CodeGroup>
+  ```bash cURL
+  curl -X POST https://api.scam.ai/faceswap/detect \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "media_url": "https://example.com/video.mp4",
+      "analysis_depth": "comprehensive"
+    }'
+  ```
+
+  ```javascript Node.js
+  const axios = require('axios');
+
+  const detectDeepfake = async (mediaUrl) => {
+    try {
+      const response = await axios.post('https://api.scam.ai/faceswap/detect', {
+        media_url: mediaUrl,
+        analysis_depth: 'comprehensive'
+      }, {
+        headers: {
+          'Authorization': 'Bearer YOUR_API_KEY',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Detection failed:', error);
+    }
+  };
+  ```
+
+  ```python Python
+  import requests
+  import json
+
+  def detect_deepfake(media_url):
+      headers = {
+          'Authorization': 'Bearer YOUR_API_KEY',
+          'Content-Type': 'application/json'
+      }
+      
+      payload = {
+          'media_url': media_url,
+          'analysis_depth': 'comprehensive'
+      }
+      
+      response = requests.post(
+          'https://api.scam.ai/faceswap/detect',
+          headers=headers,
+          json=payload
+      )
+      
+      return response.json()
+  ```
+</CodeGroup>
+
+### Response Handling
+
+The API returns comprehensive detection results:
+
+```json
+{
+  "detection_id": "df_12345",
+  "is_deepfake": true,
+  "confidence_score": 0.94,
+  "processing_time": 2.3,
+  "analysis_results": {
+    "face_swap_detected": true,
+    "manipulation_type": "face_replacement",
+    "affected_regions": [
+      {
+        "region": "face",
+        "confidence": 0.96,
+        "coordinates": {
+          "x": 120, "y": 80, "width": 200, "height": 240
+        }
+      }
+    ],
+    "temporal_analysis": {
+      "inconsistencies": 0.87,
+      "suspicious_frames": [45, 67, 89, 123],
+      "stability_score": 0.23
+    },
+    "technical_indicators": {
+      "compression_artifacts": 0.89,
+      "facial_landmarks_anomaly": 0.92,
+      "biological_signals": {
+        "pulse_detected": false,
+        "breathing_patterns": "irregular",
+        "micro_expressions": "absent"
+      }
+    }
+  },
+  "frame_analysis": [
+    {
+      "frame_number": 1,
+      "timestamp": 0.033,
+      "confidence": 0.95,
+      "detected_anomalies": [
+        "facial_boundary_inconsistency",
+        "lighting_mismatch",
+        "texture_artifacts"
+      ]
+    }
+  ],
+  "metadata": {
+    "video_duration": 30.5,
+    "total_frames": 915,
+    "resolution": "1920x1080",
+    "frame_rate": 30,
+    "codec": "h264"
+  }
+}
+```
+
+### Error Handling
+
+Implement robust error handling for various scenarios:
+
+<CodeGroup>
+  ```javascript Node.js
+  const handleDetectionErrors = (error) => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 400:
+          console.error('Invalid request format');
+          break;
+        case 401:
+          console.error('Authentication failed');
+          break;
+        case 413:
+          console.error('File too large');
+          break;
+        case 429:
+          console.error('Rate limit exceeded');
+          break;
+        case 500:
+          console.error('Server error - retry later');
+          break;
+        default:
+          console.error('Unexpected error:', error.response.data);
+      }
+    }
+  };
+  ```
+
+  ```python Python
+  def handle_detection_errors(response):
+      if response.status_code == 400:
+          print("Invalid request format")
+      elif response.status_code == 401:
+          print("Authentication failed")
+      elif response.status_code == 413:
+          print("File too large")
+      elif response.status_code == 429:
+          print("Rate limit exceeded")
+      elif response.status_code == 500:
+          print("Server error - retry later")
+      else:
+          print(f"Unexpected error: {response.text}")
+  ```
+</CodeGroup>
+
+## Advanced Configuration
+
+### Analysis Parameters
+
+Customize detection behavior with advanced parameters:
+
+```json
+{
+  "media_url": "https://example.com/video.mp4",
+  "analysis_options": {
+    "confidence_threshold": 0.8,
+    "analysis_depth": "comprehensive",
+    "frame_sampling": "intelligent",
+    "face_detection_threshold": 0.9,
+    "temporal_window": 5,
+    "biological_analysis": true,
+    "compression_analysis": true,
+    "landmark_analysis": true
+  },
+  "output_options": {
+    "include_frame_analysis": true,
+    "include_heatmaps": false,
+    "include_confidence_timeline": true,
+    "detailed_report": true
+  }
+}
+```
+
+### Batch Processing
+
+Process multiple files efficiently:
+
+```json
+{
+  "batch_id": "batch_12345",
+  "files": [
+    {
+      "id": "file_1",
+      "media_url": "https://example.com/video1.mp4",
+      "priority": "high"
+    },
+    {
+      "id": "file_2", 
+      "media_url": "https://example.com/video2.mp4",
+      "priority": "normal"
+    }
+  ],
+  "callback_url": "https://your-app.com/batch-complete",
+  "analysis_options": {
+    "confidence_threshold": 0.75
+  }
+}
+```
+
+## Real-time Integration
+
+### WebSocket Implementation
+
+Implement real-time deepfake detection for live streams:
+
+```javascript
+const WebSocket = require('ws');
+
+class RealtimeDeepfakeDetection {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.ws = null;
+  }
+
+  connect() {
+    this.ws = new WebSocket('wss://api.scam.ai/faceswap/stream', {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`
+      }
+    });
+
+    this.ws.on('open', () => {
+      console.log('Connected to real-time detection');
+    });
+
+    this.ws.on('message', (data) => {
+      const result = JSON.parse(data);
+      this.handleDetectionResult(result);
+    });
+  }
+
+  analyzeFrame(frameData, timestamp) {
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        frame_data: frameData,
+        timestamp: timestamp,
+        stream_id: 'camera_1'
+      }));
+    }
+  }
+
+  handleDetectionResult(result) {
+    if (result.is_deepfake && result.confidence_score > 0.8) {
+      // Alert system of potential deepfake
+      this.triggerAlert(result);
+    }
+  }
+}
+```
+
+## Performance Optimization
+
+### Caching Strategy
+
+Implement intelligent caching to reduce API calls:
+
+```javascript
+const NodeCache = require('node-cache');
+const crypto = require('crypto');
+
+class DeepfakeDetectionCache {
+  constructor() {
+    this.cache = new NodeCache({ stdTTL: 3600 }); // 1 hour TTL
+  }
+
+  generateHash(mediaUrl) {
+    return crypto.createHash('sha256').update(mediaUrl).digest('hex');
+  }
+
+  async detectWithCache(mediaUrl) {
+    const hash = this.generateHash(mediaUrl);
+    const cached = this.cache.get(hash);
+    
+    if (cached) {
+      return { ...cached, fromCache: true };
+    }
+
+    const result = await this.callDetectionAPI(mediaUrl);
+    this.cache.set(hash, result);
+    
+    return result;
+  }
+}
+```
+
+### Rate Limiting
+
+Handle API rate limits gracefully:
+
+```javascript
+class RateLimitedDetection {
+  constructor(apiKey, maxRequestsPerMinute = 60) {
+    this.apiKey = apiKey;
+    this.requestQueue = [];
+    this.maxRPM = maxRequestsPerMinute;
+    this.currentRequests = 0;
+    
+    setInterval(() => {
+      this.currentRequests = 0;
+      this.processQueue();
+    }, 60000);
+  }
+
+  async detect(mediaUrl) {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push({ mediaUrl, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  async processQueue() {
+    while (this.requestQueue.length > 0 && this.currentRequests < this.maxRPM) {
+      const { mediaUrl, resolve, reject } = this.requestQueue.shift();
+      this.currentRequests++;
+      
+      try {
+        const result = await this.callDetectionAPI(mediaUrl);
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      }
+    }
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Confidence Thresholds">
+    Set appropriate confidence thresholds based on your use case:
+    - **High Security (0.9+)**: Financial services, legal evidence
+    - **Balanced (0.7-0.9)**: Social media moderation, content verification
+    - **Permissive (0.5-0.7)**: General content screening, research
+  </Accordion>
+
+  <Accordion title="False Positive Handling">
+    Implement strategies to handle false positives:
+    - Human review for borderline cases
+    - User feedback mechanisms
+    - Confidence score weighting
+    - Context-aware decision making
+  </Accordion>
+
+  <Accordion title="Performance Monitoring">
+    Monitor your detection system performance:
+    - Track API response times
+    - Monitor detection accuracy over time
+    - Set up alerts for service issues
+    - Analyze usage patterns and costs
+  </Accordion>
+
+  <Accordion title="Security Considerations">
+    Ensure secure implementation:
+    - Secure API key storage
+    - HTTPS-only communications
+    - Input validation and sanitization
+    - Audit logging for compliance
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Health Check Setup"
+    icon="heart-pulse"
+    href="/deepfake/health-check"
+  >
+    Monitor your detection system's health and performance
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/faceswap/detect"
+  >
+    Complete API documentation with all parameters and examples
+  </Card>
+</CardGroup> 

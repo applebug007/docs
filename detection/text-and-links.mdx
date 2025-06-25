@@ -1,0 +1,225 @@
+---
+title: 'Text and Links Detection'
+description: 'Detect scam patterns, phishing attempts, and malicious content in emails, SMS, links, and QR codes'
+---
+
+# Text and Links Detection
+
+Protect yourself and your users from sophisticated text-based scams, phishing attempts, and malicious links. Our advanced natural language processing and URL analysis capabilities can identify threats across multiple communication channels.
+
+## What We Detect
+
+<CardGroup cols={2}>
+  <Card
+    title="Email Scams"
+    icon="envelope"
+  >
+    Phishing emails, business email compromise, fake invoices, and fraudulent communications
+  </Card>
+  <Card
+    title="SMS Fraud"
+    icon="message"
+  >
+    Smishing attacks, fake delivery notifications, two-factor authentication bypasses
+  </Card>
+  <Card
+    title="Malicious Links"
+    icon="link"
+  >
+    Phishing sites, malware downloads, credential harvesting pages, redirect chains
+  </Card>
+  <Card
+    title="QR Code Threats"
+    icon="qrcode"
+  >
+    Malicious QR codes leading to scam sites, app downloads, or data collection
+  </Card>
+</CardGroup>
+
+## Detection Capabilities
+
+### Email Analysis
+- **Subject Line Scanning**: Identify suspicious patterns in email subjects
+- **Content Analysis**: Deep text analysis for scam indicators
+- **Sender Verification**: Check sender reputation and authenticity
+- **Attachment Scanning**: Analyze file attachments for threats
+
+### SMS/Text Message Analysis
+- **Pattern Recognition**: Identify common smishing patterns
+- **Urgency Detection**: Flag messages creating false sense of urgency
+- **Contact Verification**: Validate sender identity claims
+- **Link Extraction**: Analyze embedded links and short URLs
+
+### URL and Link Analysis
+- **Domain Reputation**: Check against threat intelligence databases
+- **Redirect Analysis**: Follow redirect chains to final destinations
+- **Certificate Validation**: Verify SSL/TLS certificate authenticity
+- **Content Scanning**: Analyze destination page content
+
+### QR Code Analysis
+- **URL Extraction**: Decode QR codes to reveal destination URLs
+- **Redirect Tracking**: Follow QR code links through redirects
+- **App Store Validation**: Verify legitimate app download links
+- **Social Engineering Detection**: Identify manipulative content
+
+## Common Scam Patterns We Detect
+
+<AccordionGroup>
+  <Accordion title="Phishing Attempts">
+    - Fake login pages mimicking legitimate services
+    - Credential harvesting forms
+    - Account verification scams
+    - Password reset impersonations
+  </Accordion>
+
+  <Accordion title="Financial Fraud">
+    - Fake banking notifications
+    - Cryptocurrency scams
+    - Investment fraud schemes
+    - Tax refund scams
+  </Accordion>
+
+  <Accordion title="Social Engineering">
+    - Urgency-based messages
+    - Authority impersonation
+    - Emotional manipulation tactics
+    - Trust exploitation schemes
+  </Accordion>
+
+  <Accordion title="Technical Scams">
+    - Tech support fraud
+    - Software update scams
+    - Virus warning false positives
+    - Remote access attempts
+  </Accordion>
+</AccordionGroup>
+
+## API Integration
+
+### Analyze Text Content
+
+```bash
+POST /api/text/analyze
+```
+
+Analyze email, SMS, or any text content for scam patterns:
+
+```json
+{
+  "content": "Congratulations! You've won $1,000,000. Click here to claim your prize!",
+  "type": "email",
+  "sender": "noreply@suspicious-domain.com"
+}
+```
+
+### Check URL Safety
+
+```bash
+POST /api/url/analyze
+```
+
+Analyze URLs and links for malicious content:
+
+```json
+{
+  "url": "https://suspicious-link.example.com/claim-prize",
+  "follow_redirects": true,
+  "check_content": true
+}
+```
+
+### Decode QR Codes
+
+```bash
+POST /api/qr/analyze
+```
+
+Analyze QR codes by uploading an image:
+
+```json
+{
+  "image_data": "base64_encoded_qr_image",
+  "analyze_destination": true
+}
+```
+
+## Response Format
+
+All detection APIs return a standardized response format:
+
+```json
+{
+  "threat_detected": true,
+  "confidence_score": 0.94,
+  "threat_type": "phishing",
+  "risk_level": "high",
+  "details": {
+    "patterns_found": ["urgency_language", "suspicious_domain", "credential_request"],
+    "domain_reputation": "blacklisted",
+    "content_analysis": {
+      "language_manipulation": true,
+      "social_engineering": true
+    }
+  },
+  "recommendations": [
+    "Do not click any links in this message",
+    "Report this content as spam",
+    "Verify sender through alternative channels"
+  ]
+}
+```
+
+## Real-world Examples
+
+### Email Phishing Detection
+**Input**: "Your PayPal account has been limited. Verify immediately to avoid closure."
+**Detection**: High-confidence phishing attempt using urgency and brand impersonation
+
+### SMS Smishing Detection
+**Input**: "URGENT: Your package delivery failed. Reschedulue: bit.ly/track123"
+**Detection**: Smishing attempt with urgency tactics and suspicious short URL
+
+### Malicious URL Detection
+**Input**: "secure-paypaI-verification.suspicious-domain.com"
+**Detection**: Domain spoofing using character substitution (I instead of l)
+
+## Integration Best Practices
+
+<CardGroup cols={2}>
+  <Card
+    title="Real-time Scanning"
+    icon="clock"
+  >
+    Implement real-time scanning for incoming emails and messages
+  </Card>
+  <Card
+    title="User Education"
+    icon="graduation-cap"
+  >
+    Combine detection with user education about identified threats
+  </Card>
+  <Card
+    title="Quarantine System"
+    icon="shield"
+  >
+    Automatically quarantine high-risk content for manual review
+  </Card>
+  <Card
+    title="Feedback Loop"
+    icon="refresh"
+  >
+    Implement user feedback to improve detection accuracy
+  </Card>
+</CardGroup>
+
+## API Reference
+
+For detailed API documentation and code examples:
+
+<Card
+  title="Text Analysis APIs"
+  icon="code"
+  href="/api-reference/fraud/detect"
+>
+  Explore complete API documentation with examples and integration guides
+</Card> 

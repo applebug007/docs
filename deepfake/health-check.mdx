@@ -1,0 +1,482 @@
+---
+title: 'Deepfake Detection Health Check'
+description: 'Monitor the health and performance of your deepfake detection system'
+---
+
+# Deepfake Detection Health Check
+
+Monitor the health, performance, and availability of your deepfake detection system to ensure reliable operation and optimal detection accuracy.
+
+## Health Check Endpoint
+
+Check the status of the FaceSwap Detection service:
+
+```bash
+GET /api/faceswap/health
+```
+
+### Response Format
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "2.1.4",
+  "uptime": 99.97,
+  "performance_metrics": {
+    "average_response_time": 1.2,
+    "requests_per_minute": 450,
+    "success_rate": 99.94,
+    "queue_length": 3
+  },
+  "system_health": {
+    "cpu_usage": 67.3,
+    "memory_usage": 78.1,
+    "disk_usage": 45.2,
+    "gpu_utilization": 82.4
+  },
+  "detection_accuracy": {
+    "current_accuracy": 97.2,
+    "false_positive_rate": 2.1,
+    "false_negative_rate": 0.7,
+    "last_calibration": "2024-01-14T15:00:00Z"
+  }
+}
+```
+
+## Monitoring Dashboard
+
+Implement comprehensive monitoring for your detection system:
+
+### System Metrics
+
+<CardGroup cols={2}>
+  <Card
+    title="Performance Monitoring"
+    icon="chart-line"
+  >
+    Track response times, throughput, and system load in real-time
+  </Card>
+  <Card
+    title="Accuracy Tracking"
+    icon="bullseye"
+  >
+    Monitor detection accuracy and calibration over time
+  </Card>
+  <Card
+    title="Error Analysis"
+    icon="bug"
+  >
+    Analyze error patterns and failure modes
+  </Card>
+  <Card
+    title="Resource Usage"
+    icon="server"
+  >
+    Monitor CPU, memory, and GPU utilization
+  </Card>
+</CardGroup>
+
+### Key Performance Indicators
+
+Monitor these critical metrics for optimal system performance:
+
+#### **Response Time Metrics**
+- **Average Response Time**: Target <2 seconds for standard analysis
+- **95th Percentile**: Should remain under 5 seconds
+- **99th Percentile**: Maximum 10 seconds for complex videos
+- **Real-time Processing**: <100ms per frame for live streams
+
+#### **Accuracy Metrics**
+- **Overall Accuracy**: Target >95% on benchmark datasets
+- **False Positive Rate**: Keep below 3% for user experience
+- **False Negative Rate**: Critical to maintain below 1%
+- **Confidence Calibration**: Regular validation against ground truth
+
+#### **Availability Metrics**
+- **System Uptime**: Target 99.9% availability
+- **Error Rate**: Keep below 1% of total requests
+- **Queue Management**: Process requests within SLA times
+- **Failover Response**: Automatic recovery within 30 seconds
+
+## Implementation Guide
+
+### Basic Health Monitoring
+
+Implement regular health checks in your application:
+
+<CodeGroup>
+  ```javascript Node.js
+  const axios = require('axios');
+
+  class DeepfakeHealthMonitor {
+    constructor(apiKey, checkInterval = 60000) {
+      this.apiKey = apiKey;
+      this.checkInterval = checkInterval;
+      this.healthStatus = null;
+      this.startMonitoring();
+    }
+
+    async checkHealth() {
+      try {
+        const response = await axios.get('https://api.scam.ai/faceswap/health', {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`
+          }
+        });
+
+        this.healthStatus = response.data;
+        this.processHealthData(response.data);
+        return response.data;
+      } catch (error) {
+        console.error('Health check failed:', error);
+        this.handleHealthCheckFailure(error);
+        throw error;
+      }
+    }
+
+    processHealthData(health) {
+      // Alert on poor performance
+      if (health.performance_metrics.average_response_time > 3.0) {
+        this.alertSlowResponse(health);
+      }
+
+      // Alert on low accuracy
+      if (health.detection_accuracy.current_accuracy < 95.0) {
+        this.alertLowAccuracy(health);
+      }
+
+      // Alert on high error rate
+      if (health.performance_metrics.success_rate < 99.0) {
+        this.alertHighErrorRate(health);
+      }
+    }
+
+    startMonitoring() {
+      setInterval(() => {
+        this.checkHealth().catch(err => {
+          console.error('Health monitoring error:', err);
+        });
+      }, this.checkInterval);
+    }
+  }
+  ```
+
+  ```python Python
+  import requests
+  import time
+  import threading
+  from datetime import datetime
+
+  class DeepfakeHealthMonitor:
+      def __init__(self, api_key, check_interval=60):
+          self.api_key = api_key
+          self.check_interval = check_interval
+          self.health_status = None
+          self.monitoring = False
+          
+      def check_health(self):
+          headers = {
+              'Authorization': f'Bearer {self.api_key}'
+          }
+          
+          try:
+              response = requests.get(
+                  'https://api.scam.ai/faceswap/health',
+                  headers=headers
+              )
+              response.raise_for_status()
+              
+              self.health_status = response.json()
+              self.process_health_data(self.health_status)
+              return self.health_status
+              
+          except requests.exceptions.RequestException as e:
+              print(f"Health check failed: {e}")
+              self.handle_health_check_failure(e)
+              raise
+              
+      def process_health_data(self, health):
+          # Check response time
+          if health['performance_metrics']['average_response_time'] > 3.0:
+              self.alert_slow_response(health)
+              
+          # Check accuracy
+          if health['detection_accuracy']['current_accuracy'] < 95.0:
+              self.alert_low_accuracy(health)
+              
+          # Check success rate
+          if health['performance_metrics']['success_rate'] < 99.0:
+              self.alert_high_error_rate(health)
+              
+      def start_monitoring(self):
+          self.monitoring = True
+          
+          def monitor():
+              while self.monitoring:
+                  try:
+                      self.check_health()
+                  except Exception as e:
+                      print(f"Health monitoring error: {e}")
+                  time.sleep(self.check_interval)
+                  
+          thread = threading.Thread(target=monitor)
+          thread.daemon = True
+          thread.start()
+  ```
+</CodeGroup>
+
+### Advanced Monitoring
+
+Implement comprehensive monitoring with alerting:
+
+```javascript
+class AdvancedHealthMonitor {
+  constructor(config) {
+    this.config = config;
+    this.metrics = new Map();
+    this.alerts = new Map();
+    this.thresholds = {
+      responseTime: 2.0,
+      accuracy: 95.0,
+      errorRate: 1.0,
+      uptime: 99.9
+    };
+  }
+
+  async collectMetrics() {
+    const health = await this.checkHealth();
+    const timestamp = Date.now();
+
+    // Store metrics with timestamp
+    this.storeMetric('response_time', health.performance_metrics.average_response_time, timestamp);
+    this.storeMetric('accuracy', health.detection_accuracy.current_accuracy, timestamp);
+    this.storeMetric('error_rate', 100 - health.performance_metrics.success_rate, timestamp);
+    this.storeMetric('uptime', health.uptime, timestamp);
+
+    return this.analyzeMetrics();
+  }
+
+  storeMetric(name, value, timestamp) {
+    if (!this.metrics.has(name)) {
+      this.metrics.set(name, []);
+    }
+    
+    const metricArray = this.metrics.get(name);
+    metricArray.push({ value, timestamp });
+    
+    // Keep only last 1000 data points
+    if (metricArray.length > 1000) {
+      metricArray.shift();
+    }
+  }
+
+  analyzeMetrics() {
+    const analysis = {};
+    
+    for (const [metricName, data] of this.metrics) {
+      const recentData = data.slice(-10); // Last 10 readings
+      const average = recentData.reduce((sum, point) => sum + point.value, 0) / recentData.length;
+      
+      analysis[metricName] = {
+        current: recentData[recentData.length - 1]?.value,
+        average: average,
+        trend: this.calculateTrend(recentData),
+        threshold_exceeded: this.checkThreshold(metricName, average)
+      };
+    }
+    
+    return analysis;
+  }
+
+  calculateTrend(data) {
+    if (data.length < 2) return 'stable';
+    
+    const recent = data.slice(-5).map(d => d.value);
+    const older = data.slice(-10, -5).map(d => d.value);
+    
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+    
+    const change = ((recentAvg - olderAvg) / olderAvg) * 100;
+    
+    if (change > 5) return 'improving';
+    if (change < -5) return 'degrading';
+    return 'stable';
+  }
+}
+```
+
+## Alerting System
+
+Set up comprehensive alerting for critical issues:
+
+### Alert Types
+
+<AccordionGroup>
+  <Accordion title="Performance Alerts">
+    **High Response Time**: Response time >3 seconds for 5 consecutive checks
+    
+    **Low Throughput**: Requests per minute drops below expected baseline
+    
+    **Queue Backup**: Processing queue length exceeds capacity thresholds
+  </Accordion>
+
+  <Accordion title="Accuracy Alerts">
+    **Accuracy Degradation**: Detection accuracy drops below 95%
+    
+    **High False Positives**: False positive rate exceeds 5%
+    
+    **Calibration Drift**: Model requires recalibration based on recent performance
+  </Accordion>
+
+  <Accordion title="System Alerts">
+    **Service Unavailable**: Health check endpoint returns error status
+    
+    **Resource Exhaustion**: CPU, memory, or GPU usage exceeds 90%
+    
+    **API Rate Limits**: Approaching or exceeding rate limit thresholds
+  </Accordion>
+
+  <Accordion title="Security Alerts">
+    **Authentication Failures**: Multiple failed authentication attempts
+    
+    **Unusual Usage Patterns**: Suspicious request patterns or volumes
+    
+    **Data Integrity Issues**: Inconsistent or corrupted detection results
+  </Accordion>
+</AccordionGroup>
+
+### Alert Configuration
+
+```javascript
+const alertConfig = {
+  channels: {
+    email: ['admin@yourcompany.com', 'team@yourcompany.com'],
+    slack: '#monitoring-alerts',
+    webhook: 'https://your-app.com/alerts/webhook'
+  },
+  thresholds: {
+    response_time: {
+      warning: 2.0,
+      critical: 5.0
+    },
+    accuracy: {
+      warning: 96.0,
+      critical: 94.0
+    },
+    uptime: {
+      warning: 99.5,
+      critical: 99.0
+    }
+  },
+  escalation: {
+    warning: ['email'],
+    critical: ['email', 'slack', 'webhook']
+  }
+};
+```
+
+## Troubleshooting Guide
+
+### Common Issues and Solutions
+
+<AccordionGroup>
+  <Accordion title="Slow Response Times">
+    **Symptoms**: Health check shows high average response time
+    
+    **Causes**: 
+    - High system load
+    - Large file uploads
+    - Network latency
+    - Resource constraints
+    
+    **Solutions**:
+    - Scale processing capacity
+    - Implement request queuing
+    - Optimize file handling
+    - Add regional endpoints
+  </Accordion>
+
+  <Accordion title="Accuracy Degradation">
+    **Symptoms**: Detection accuracy below expected thresholds
+    
+    **Causes**:
+    - Model drift over time
+    - New deepfake techniques
+    - Data quality issues
+    - Misconfigured parameters
+    
+    **Solutions**:
+    - Retrain detection models
+    - Update model parameters
+    - Validate input data quality
+    - Recalibrate confidence thresholds
+  </Accordion>
+
+  <Accordion title="High Error Rates">
+    **Symptoms**: Success rate below 99%
+    
+    **Causes**:
+    - Invalid input formats
+    - Network connectivity issues
+    - Service dependencies down
+    - Rate limiting
+    
+    **Solutions**:
+    - Validate input before sending
+    - Implement retry logic
+    - Check dependency status
+    - Manage request rates
+  </Accordion>
+</AccordionGroup>
+
+## Performance Optimization
+
+### Optimization Strategies
+
+<CardGroup cols={2}>
+  <Card
+    title="Caching"
+    icon="database"
+  >
+    Implement intelligent caching for frequently analyzed content
+  </Card>
+  <Card
+    title="Batch Processing"
+    icon="layer-group"
+  >
+    Group multiple requests for more efficient processing
+  </Card>
+  <Card
+    title="Load Balancing"
+    icon="scale-balanced"
+  >
+    Distribute requests across multiple detection instances
+  </Card>
+  <Card
+    title="Content Filtering"
+    icon="filter"
+  >
+    Pre-filter content to reduce unnecessary API calls
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Voice Clone Detection"
+    icon="microphone"
+    href="/voice-clone/introduction"
+  >
+    Learn about voice clone detection capabilities
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/faceswap/health"
+  >
+    Complete health check API documentation
+  </Card>
+</CardGroup> 
