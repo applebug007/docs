@@ -47,9 +47,9 @@
           {
             "group": "Deepfake APIs",
             "pages": [
-              "api-reference/faceswap/health",
               "api-reference/faceswap/detect",
-              "api-reference/faceswap/upload-detect"
+              "api-reference/faceswap/upload-detect",
+              "api-reference/faceswap/health"
             ]
           },
           {
@@ -57,8 +57,8 @@
             "pages": [
               "api-reference/voice/detect",
               "api-reference/voice/upload-detect",
-              "api-reference/voice/health",
-              "api-reference/defence/analyze-audio"
+              "api-reference/defence/analyze-audio",
+              "api-reference/voice/health"
             ]
           },
           {
@@ -73,11 +73,11 @@
           {
             "group": "Security & Defence",
             "pages": [
-              "api-reference/defence/health",
               "api-reference/defence/detect-deepfake",
               "api-reference/defence/check-authenticity",
               "api-reference/ai-agent/process",
-              "api-reference/fraud/detect"
+              "api-reference/fraud/detect",
+              "api-reference/defence/health"
             ]
           }
         ]
@@ -86,9 +86,9 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Overview",
             "pages": [
-              "introduction"
+              "api-reference/api-overview"
             ]
           },
           {
@@ -119,7 +119,7 @@
         "tab": "Changelog",
         "groups": [
           {
-            "group": "",
+            "group": "Changelog",
             "pages": [
               "updates/changelog"
             ]
@@ -129,11 +129,6 @@
     ],
     "global": {
       "anchors": [
-        {
-          "anchor": "Blog",
-          "href": "https://www.scam.ai/blog",
-          "icon": "newspaper"
-        },
         {
           "anchor": "LinkedIn",
           "href": "https://www.linkedin.com/company/scam-ai",
