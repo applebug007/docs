@@ -9,97 +9,153 @@
   },
   "favicon": "/logo/favicon.png",
   "navigation": {
-    "groups": [
+    "tabs": [
       {
-        "group": "Getting Started",
-        "pages": [
-          "introduction",
-          "quickstart",
-          "generate-key"
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "generate-key"
+            ]
+          },
+          {
+            "group": "Detection Methods",
+            "pages": [
+              "detection/overview",
+              "detection/text-and-links",
+              "detection/deepfake-voice-clone",
+              "detection/genai-content"
+            ]
+          },
+          {
+            "group": "Deepfake Detection",
+            "pages": [
+              "deepfake/introduction",
+              "deepfake/detect",
+              "deepfake/health-check"
+            ]
+          },
+          {
+            "group": "Voice Clone Detection",
+            "pages": [
+              "voice-clone/introduction",
+              "voice-clone/detect",
+              "voice-clone/health-check"
+            ]
+          },
+          {
+            "group": "Deepfake APIs",
+            "pages": [
+              "api-reference/faceswap/health",
+              "api-reference/faceswap/detect",
+              "api-reference/faceswap/upload-detect"
+            ]
+          },
+          {
+            "group": "Voice & Audio APIs",
+            "pages": [
+              "api-reference/voice/detect",
+              "api-reference/voice/upload-detect",
+              "api-reference/voice/health",
+              "api-reference/defence/analyze-audio"
+            ]
+          },
+          {
+            "group": "Content Detection APIs",
+            "pages": [
+              "api-reference/ai-content/upload-detect",
+              "api-reference/ai-content/health",
+              "api-reference/document/detect",
+              "api-reference/document/health"
+            ]
+          },
+          {
+            "group": "Security & Defence",
+            "pages": [
+              "api-reference/defence/health",
+              "api-reference/defence/detect-deepfake",
+              "api-reference/defence/check-authenticity",
+              "api-reference/ai-agent/process",
+              "api-reference/fraud/detect"
+            ]
+          }
         ]
       },
       {
-        "group": "Detection Methods",
-        "pages": [
-          "detection/overview",
-          "detection/text-and-links",
-          "detection/deepfake-voice-clone",
-          "detection/genai-content"
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "Introduction"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
+              {
+                "group": "Defence APIs",
+                "pages": [
+                  "api-reference/endpoint/faceswap-detection",
+                  "api-reference/endpoint/voice-clone-detection",
+                  "api-reference/endpoint/document-fraud-detection",
+                  "api-reference/endpoint/ai-content-detection",
+                  "api-reference/endpoint/ai-agent"
+                ]
+              },
+              {
+                "group": "Attack APIs",
+                "pages": [
+                  "api-reference/endpoint/faceswap-attack",
+                  "api-reference/endpoint/voice-clone-attack"
+                ]
+              }
+            ]
+          }
         ]
       },
       {
-        "group": "Deepfake Detection",
-        "pages": [
-          "deepfake/introduction",
-          "deepfake/detect",
-          "deepfake/health-check"
-        ]
-      },
-      {
-        "group": "Voice Clone Detection",
-        "pages": [
-          "voice-clone/introduction",
-          "voice-clone/detect",
-          "voice-clone/health-check"
-        ]
-      },
-      {
-        "group": "Deepfake APIs",
-        "pages": [
-          "api-reference/faceswap/health",
-          "api-reference/faceswap/detect",
-          "api-reference/faceswap/upload-detect"
-        ]
-      },
-      {
-        "group": "Voice & Audio APIs",
-        "pages": [
-          "api-reference/voice/detect",
-          "api-reference/voice/upload-detect",
-          "api-reference/voice/health",
-          "api-reference/defence/analyze-audio"
-        ]
-      },
-      {
-        "group": "Content Detection APIs",
-        "pages": [
-          "api-reference/ai-content/upload-detect",
-          "api-reference/ai-content/health",
-          "api-reference/document/detect",
-          "api-reference/document/health"
-        ]
-      },
-      {
-        "group": "Security & Defence",
-        "pages": [
-          "api-reference/defence/health",
-          "api-reference/defence/detect-deepfake",
-          "api-reference/defence/check-authenticity",
-          "api-reference/ai-agent/process",
-          "api-reference/fraud/detect"
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "",
+            "pages": [
+              "updates/changelog"
+            ]
+          }
         ]
       }
-    ]
-  },
-  "anchors": [
-    {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://www.scam.ai/blog"
-    },
-    {
-      "name": "LinkedIn",
-      "icon": "linkedin",
-      "url": "https://www.linkedin.com/company/scam-ai"
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Blog",
+          "href": "https://www.scam.ai/blog",
+          "icon": "newspaper"
+        },
+        {
+          "anchor": "LinkedIn",
+          "href": "https://www.linkedin.com/company/scam-ai",
+          "icon": "linkedin"
+        }
+      ]
     }
-  ],
+  },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg",
     "href": "https://www.scam.ai"
   },
-  "api": {
-    "baseUrl": "https://www.scam.ai/api"
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "https://www.scam.ai/contact"
+      }
+    ]
   },
   "footer": {
     "socials": {
