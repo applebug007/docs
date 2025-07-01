@@ -139,8 +139,7 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
-    "href": "https://www.scam.ai"
+    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
