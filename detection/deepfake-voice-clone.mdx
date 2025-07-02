@@ -1,6 +1,6 @@
 ---
-title: 'Deepfake & Voice Clone Detection'
-description: 'Detect deepfakes, voice clones, and manipulated media with our advanced AI models'
+title: 'Deepfake Detection API'
+description: 'Detect deepfakes and face manipulation in images with our advanced AI detection models'
 ---
 ## What We Detect
 
@@ -9,304 +9,474 @@ description: 'Detect deepfakes, voice clones, and manipulated media with our adv
     title="Face Swap Deepfakes"
     icon="face-grin-beam"
   >
-    AI-generated videos where faces have been digitally replaced or manipulated
+    AI-generated images where faces have been digitally replaced or swapped
   </Card>
   <Card
-    title="Voice Clones"
-    icon="microphone"
+    title="Face Manipulation"
+    icon="user-pen"
   >
-    Synthetic audio that mimics real voices using AI voice cloning technology
+    Digitally altered facial features, expressions, and characteristics
   </Card>
   <Card
-    title="Video Manipulation"
-    icon="video"
+    title="Synthetic Faces"
+    icon="robot"
   >
-    Altered video content including expression changes and facial reenactment
+    Completely AI-generated faces that don't belong to real people
   </Card>
   <Card
-    title="Audio Synthesis"
-    icon="waveform-lines"
+    title="Image Forgery"
+    icon="eye"
   >
-    AI-generated speech and manipulated audio recordings
+    Sophisticated photo editing and digital manipulation techniques
   </Card>
 </CardGroup>
+
+## Deployment Information
+
+**API Endpoint**: `http://3.80.33.105:5000`  
+**Status**: Production Ready  
+**Authentication**: API Key Required  
+**Supported Formats**: JPEG, PNG  
+**Processing**: Real-time analysis  
 
 ## Understanding the Threats
 
 ### Deepfakes Explained
-Deepfakes are AI-generated videos or images where a person's face is replaced with someone else's face. They're created using deep learning algorithms that can:
+Deepfakes are AI-generated images where a person's face is replaced with someone else's face or digitally manipulated. They're created using deep learning algorithms that can:
 
-- **Face Swapping**: Replace one person's face with another's in videos
+- **Face Swapping**: Replace one person's face with another's in images
 - **Expression Transfer**: Change facial expressions while keeping the identity
 - **Age/Gender Modification**: Alter apparent age or gender characteristics
-- **Full Facial Reenactment**: Control all facial movements and expressions
+- **Synthetic Face Generation**: Create completely artificial faces that look real
+- **Feature Manipulation**: Alter specific facial features or characteristics
 
 **Common Uses in Fraud**:
 - Identity theft and impersonation
-- Fake testimonials and endorsements
-- Spreading misinformation
+- Fake profile pictures on social media
+- Fraudulent ID documents
 - Creating false evidence
 - Social engineering attacks
+- Catfishing and romance scams
 
-### Voice Cloning Technology
-Voice cloning uses AI to generate synthetic speech that sounds like a specific person. Modern voice cloning can:
+### Detection Challenges
+Modern deepfake technology is increasingly sophisticated, making detection challenging:
 
-- **Replicate Voice Characteristics**: Match tone, accent, and speaking patterns
-- **Generate Any Text**: Make the cloned voice say anything
-- **Real-time Synthesis**: Create voice clones in real-time conversations
-- **Emotion Manipulation**: Add emotions not in the original recordings
-
-**Common Uses in Fraud**:
-- Phone-based scams and impersonation
-- Bypassing voice authentication systems
-- Creating fake audio evidence
-- Business email compromise with audio "confirmation"
-- Vishing (voice phishing) attacks
+- **High-Quality Models**: Advanced AI generates highly realistic faces
+- **Minimal Artifacts**: Fewer visible signs of manipulation
+- **Real-time Generation**: Fast processing enables immediate use
+- **Accessibility**: User-friendly tools make creation easier
+- **Constant Evolution**: New techniques bypass existing detection methods
 
 ## Detection Technologies
 
-### Deepfake Detection Methods
+Our deepfake detection system uses advanced machine learning models to analyze images for signs of artificial generation or manipulation.
+
+### Detection Methods
 
 <AccordionGroup>
-  <Accordion title="Temporal Inconsistency Analysis">
-    Analyzes frame-by-frame changes to detect unnatural temporal patterns typical of AI generation
+  <Accordion title="Facial Feature Analysis">
+    Examines facial feature positioning, symmetry, and anatomical correctness for unnatural patterns
   </Accordion>
 
-  <Accordion title="Facial Landmark Detection">
-    Examines facial feature positioning and movement patterns for anomalies
+  <Accordion title="Texture and Lighting Analysis">
+    Analyzes skin texture, lighting consistency, and shadow patterns across the face
   </Accordion>
 
-  <Accordion title="Compression Artifact Analysis">
-    Identifies unique compression patterns left by deepfake generation algorithms
+  <Accordion title="Compression Artifact Detection">
+    Identifies unique compression patterns and artifacts left by deepfake generation algorithms
   </Accordion>
 
-  <Accordion title="Biological Signal Analysis">
-    Detects missing or irregular biological signals like pulse, breathing, and micro-expressions
+  <Accordion title="Blending Boundary Analysis">
+    Detects inconsistencies at the boundaries where synthetic content is blended with real images
   </Accordion>
 
   <Accordion title="Neural Network Fingerprinting">
-    Identifies specific AI models used for generation based on their unique signatures
+    Identifies specific AI models and generation techniques based on their unique signatures
+  </Accordion>
+
+  <Accordion title="Pixel-level Anomaly Detection">
+    Examines microscopic inconsistencies in pixel patterns that indicate artificial generation
   </Accordion>
 </AccordionGroup>
 
-### Voice Clone Detection Methods
+### Blended Fakeness Score
+Our model outputs a **blended fakeness score** ranging from 0.0 to 1.0:
 
-<AccordionGroup>
-  <Accordion title="Spectral Analysis">
-    Examines audio frequency patterns and harmonics for synthetic generation artifacts
-  </Accordion>
-
-  <Accordion title="Prosodic Feature Analysis">
-    Analyzes speech rhythm, stress patterns, and intonation for unnatural variations
-  </Accordion>
-
-  <Accordion title="Glottal Flow Analysis">
-    Examines vocal cord vibration patterns that are difficult to replicate synthetically
-  </Accordion>
-
-  <Accordion title="Speaker Verification">
-    Compares voice characteristics against known authentic samples
-  </Accordion>
-
-  <Accordion title="Real-time Streaming Analysis">
-    Detects synthetic speech in live conversations and phone calls
-  </Accordion>
-</AccordionGroup>
+- **Score calculation**: Uses ensemble methods combining multiple detection techniques
+- **Higher scores**: Indicate stronger evidence of deepfake manipulation
+- **Lower scores**: Suggest the image is likely authentic
+- **Confidence scoring**: Each detection includes a confidence measure for reliability
 
 ## API Integration
 
+### Health Check
+
+Check if the Deepfake Detection service is running and models are loaded:
+
+```bash
+GET http://3.80.33.105:5000/health
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "models_loaded": true
+}
+```
+
 ### Deepfake Detection
 
-Analyze images and videos for face manipulation:
+Analyze images for face manipulation and deepfake content:
 
 ```bash
-POST /api/faceswap/detect
+POST http://3.80.33.105:5000/predict
 ```
 
-```json
-{
-  "media_type": "video",
-  "media_url": "https://example.com/video.mp4",
-  "analysis_depth": "comprehensive"
-}
-```
+**Headers:**
+- `x-api-key`: Your API key (required for authentication)
 
-### Voice Clone Detection
+**Request:**
+- **Content-Type**: `multipart/form-data`
+- **Body**: Form data with `file` field containing the image to analyze
 
-Analyze audio files for synthetic speech:
+**Supported Image Formats:**
+- JPEG (.jpg, .jpeg)
+- PNG (.png) 
+- Other common image formats
+
+### Authentication
+
+All prediction requests require an API key in the header:
 
 ```bash
-POST /api/voice/detect
+x-api-key: your_api_key_here
 ```
 
-```json
-{
-  "audio_data": "base64_encoded_audio",
-  "speaker_reference": "optional_reference_audio",
-  "real_time": false
-}
-```
+### Error Responses
 
-### Batch Analysis
+The API returns specific error codes for different scenarios:
 
-Process multiple files simultaneously:
-
-```bash
-POST /api/defence/analyze-audio
-```
-
-```json
-{
-  "files": [
-    {
-      "id": "file1",
-      "audio_data": "base64_encoded_audio_1"
-    },
-    {
-      "id": "file2", 
-      "audio_data": "base64_encoded_audio_2"
-    }
-  ]
-}
-```
+| Status Code | Error | Description |
+|-------------|-------|-------------|
+| 401 | Unauthorized | Missing or invalid API key |
+| 400 | Bad Request | No file provided or invalid file type |
+| 422 | Unprocessable Entity | No face detected in the image |
+| 200 | Success | Analysis completed successfully |
 
 ## Response Format
 
-### Deepfake Detection Response
+### Success Response (200 OK)
+
+When a face is detected and analysis is successful:
 
 ```json
 {
-  "is_deepfake": true,
-  "confidence_score": 0.94,
-  "analysis_results": {
-    "face_swap_detected": true,
-    "manipulation_type": "face_replacement",
-    "temporal_inconsistencies": 0.87,
-    "facial_landmarks_anomaly": 0.92,
-    "compression_artifacts": 0.89
-  },
-  "frame_analysis": [
+  "faces": [
     {
-      "frame_number": 1,
-      "confidence": 0.95,
-      "detected_anomalies": ["facial_boundary", "lighting_inconsistency"]
+      "blended_fakeness_score": 0.92,
+      "face_region": {
+        "x": 150,
+        "y": 80,
+        "width": 200,
+        "height": 250
+      },
+      "confidence": 0.95
     }
   ],
-  "recommendations": [
-    "High confidence deepfake detected",
-    "Recommend manual verification",
-    "Consider source authentication"
-  ]
-}
-```
-
-### Voice Clone Detection Response
-
-```json
-{
-  "is_synthetic": true,
-  "confidence_score": 0.91,
-  "analysis_results": {
-    "voice_clone_detected": true,
-    "synthesis_method": "neural_vocoder",
-    "spectral_anomalies": 0.88,
-    "prosodic_irregularities": 0.84,
-    "glottal_inconsistencies": 0.93
-  },
-  "temporal_segments": [
-    {
-      "start_time": 0.0,
-      "end_time": 2.5,
-      "confidence": 0.95,
-      "anomaly_type": "spectral_artifact"
-    }
-  ],
-  "speaker_analysis": {
-    "matches_reference": false,
-    "similarity_score": 0.23
+  "processing_time_ms": 1247,
+  "image_metadata": {
+    "width": 1920,
+    "height": 1080,
+    "format": "JPEG"
   }
 }
 ```
 
+### Error Responses
+
+**401 Unauthorized - Missing/Invalid API Key:**
+```json
+{
+  "detail": "Unauthorized"
+}
+```
+
+**400 Bad Request - No File Provided:**
+```json
+{
+  "detail": "No file provided"
+}
+```
+
+**400 Bad Request - Invalid File Type:**
+```json
+{
+  "detail": "Invalid file type. Please upload an image."
+}
+```
+
+**422 Unprocessable Entity - No Face Detected:**
+```json
+{
+  "detail": "No face detected in the image"
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `faces` | array | Array of detected faces in the image |
+| `faces[].blended_fakeness_score` | number | Deepfake probability score (0.0 - 1.0) |
+| `faces[].face_region` | object | Bounding box coordinates of detected face |
+| `faces[].confidence` | number | Face detection confidence score |
+| `processing_time_ms` | number | Time taken to process the request |
+| `image_metadata` | object | Original image information |
+
+### Understanding Fakeness Scores
+
+| Score Range | Interpretation | Recommendation |
+|-------------|---------------|----------------|
+| 0.0 - 0.2 | Likely authentic | Low risk - appears to be real |
+| 0.2 - 0.5 | Uncertain | Medium risk - manual review recommended |
+| 0.5 - 0.8 | Likely manipulated | High risk - likely deepfake content |
+| 0.8 - 1.0 | Highly likely deepfake | Very high risk - strong deepfake indicators |
+
+### Code Examples
+
+<CodeGroup>
+
+```bash cURL
+# Health Check
+curl -X GET "http://3.80.33.105:5000/health"
+
+# Deepfake Detection
+curl -X POST "http://3.80.33.105:5000/predict" \
+  -H "x-api-key: your_api_key_here" \
+  -F "file=@/path/to/your/image.jpg"
+```
+
+```python Python
+import requests
+
+# API Configuration
+BASE_URL = "http://3.80.33.105:5000"
+API_KEY = "your_api_key_here"
+
+def health_check():
+    """Check if the API is healthy"""
+    response = requests.get(f"{BASE_URL}/health")
+    return response.json()
+
+def detect_deepfake(image_path):
+    """Detect deepfake in image file"""
+    headers = {
+        "x-api-key": API_KEY
+    }
+    
+    with open(image_path, 'rb') as image_file:
+        files = {
+            'file': image_file
+        }
+        
+        response = requests.post(
+            f"{BASE_URL}/predict",
+            headers=headers,
+            files=files
+        )
+    
+    return response.json()
+
+# Example usage
+if __name__ == "__main__":
+    # Check health
+    health = health_check()
+    print(f"API Health: {health}")
+    
+    # Detect deepfake
+    try:
+        result = detect_deepfake("suspicious_image.jpg")
+        
+        if "faces" in result:
+            for i, face in enumerate(result["faces"]):
+                score = face["blended_fakeness_score"]
+                print(f"Face {i+1}: Fakeness Score = {score:.3f}")
+                
+                if score > 0.8:
+                    print("  ⚠️  HIGH RISK: Likely deepfake")
+                elif score > 0.5:
+                    print("  ⚠️  MEDIUM RISK: Possibly manipulated")
+                elif score > 0.2:
+                    print("  ℹ️  LOW RISK: Uncertain, review recommended")
+                else:
+                    print("  ✅ AUTHENTIC: Likely real")
+        else:
+            print(f"Error: {result}")
+            
+    except Exception as e:
+        print(f"Request failed: {e}")
+```
+
+```javascript JavaScript
+const BASE_URL = 'http://3.80.33.105:5000';
+const API_KEY = 'your_api_key_here';
+
+// Health Check
+async function healthCheck() {
+  try {
+    const response = await fetch(`${BASE_URL}/health`);
+    return await response.json();
+  } catch (error) {
+    console.error('Health check failed:', error);
+    throw error;
+  }
+}
+
+// Deepfake Detection
+async function detectDeepfake(imageFile) {
+  const formData = new FormData();
+  formData.append('file', imageFile);
+
+  try {
+    const response = await fetch(`${BASE_URL}/predict`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': API_KEY
+      },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`API Error: ${error.detail}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Detection failed:', error);
+    throw error;
+  }
+}
+
+// Example usage with file input
+document.getElementById('imageInput').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    // Check API health first
+    const health = await healthCheck();
+    console.log('API Status:', health);
+
+    // Analyze image
+    const result = await detectDeepfake(file);
+    
+    if (result.faces && result.faces.length > 0) {
+      result.faces.forEach((face, index) => {
+        const score = face.blended_fakeness_score;
+        console.log(`Face ${index + 1}: Fakeness Score = ${score.toFixed(3)}`);
+        
+        let riskLevel = 'AUTHENTIC';
+        if (score > 0.8) riskLevel = 'HIGH RISK - Likely deepfake';
+        else if (score > 0.5) riskLevel = 'MEDIUM RISK - Possibly manipulated';
+        else if (score > 0.2) riskLevel = 'LOW RISK - Uncertain';
+        
+        console.log(`  Risk Level: ${riskLevel}`);
+      });
+    } else {
+      console.log('No faces detected in image');
+    }
+    
+  } catch (error) {
+    console.error('Analysis failed:', error.message);
+  }
+});
+```
+
+</CodeGroup>
+
 ## Real-world Use Cases
 
 ### Identity Verification
-- **KYC Processes**: Verify customer identity in financial services
-- **Access Control**: Authenticate users for secure systems
-- **Document Verification**: Ensure authenticity of video testimonials
+- **KYC Processes**: Verify customer identity documents and selfies in financial services
+- **Access Control**: Authenticate users through facial verification systems
+- **Profile Verification**: Ensure authenticity of profile pictures and identity photos
 
 ### Content Moderation
-- **Social Media**: Detect and flag manipulated content automatically
-- **News Verification**: Authenticate video and audio in journalism
-- **Legal Evidence**: Verify authenticity of digital evidence
+- **Social Media**: Detect and flag manipulated profile pictures and posts
+- **Dating Platforms**: Identify fake profiles using synthetic faces
+- **News Verification**: Authenticate images in journalism and media
 
 ### Security Applications
-- **Corporate Security**: Detect impersonation attempts in communications
-- **Law Enforcement**: Identify synthetic media in investigations
-- **Cybersecurity**: Prevent deepfake-based social engineering
+- **Corporate Security**: Detect impersonation attempts using fake photos
+- **Law Enforcement**: Identify synthetic media in investigations and evidence
+- **Fraud Prevention**: Stop identity theft using deepfake technology
 
-## Detection Accuracy
+### Business Applications
+- **E-commerce**: Verify seller identity and prevent fraudulent accounts
+- **Insurance**: Authenticate claim photos and documentation
+- **HR Screening**: Verify candidate photos and documents
 
-Our models achieve state-of-the-art performance:
+## Detection Performance
 
-### Video Analysis
-- **Face Swap Detection**: 97.3% accuracy
-- **Expression Manipulation**: 94.8% accuracy
-- **Real-time Processing**: 15-30 FPS
-- **False Positive Rate**: &lt;2.1%
+Our production model achieves reliable performance metrics:
 
-### Audio Analysis
-- **Voice Clone Detection**: 96.7% accuracy
-- **Real-time Analysis**: 93.4% accuracy
-- **Language Support**: 40+ languages
-- **Processing Speed**: &lt;500ms per minute of audio
+### Image Analysis
+- **Face Detection**: 99.2% accuracy in locating faces
+- **Deepfake Detection**: 94.8% accuracy on synthetic content
+- **Processing Speed**: Average 1.2 seconds per image
+- **False Positive Rate**: <3.2%
+
+### Model Specifications
+- **Supported Formats**: JPEG, PNG, WebP
+- **Input Resolution**: Up to 4K images
+- **Face Size**: Minimum 64x64 pixels
+- **Batch Processing**: Single image per request
 
 ## Integration Best Practices
 
 <CardGroup cols={2}>
   <Card
-    title="Multi-Modal Analysis"
-    icon="layers"
+    title="Image Quality"
+    icon="image"
   >
-    Combine video and audio analysis for maximum accuracy
+    Use high-resolution images with clear, well-lit faces for best results
   </Card>
   <Card
     title="Confidence Thresholds"
     icon="gauge"
   >
-    Set appropriate confidence levels based on your security requirements
+    Set appropriate fakeness score thresholds based on your security requirements
   </Card>
   <Card
     title="Human Review"
     icon="user-check"
   >
-    Implement human verification for high-stakes decisions
+    Implement human verification for borderline detection results
   </Card>
   <Card
-    title="Continuous Updates"
-    icon="refresh"
+    title="Error Handling"
+    icon="triangle-exclamation"
   >
-    Keep detection models updated against new generation techniques
+    Handle API errors gracefully and provide fallback verification methods
   </Card>
 </CardGroup>
+
+### Implementation Guidelines
+
+- **API Key Security**: Store API keys securely and rotate them regularly
+- **Rate Limiting**: Respect API rate limits and implement proper retry logic  
+- **Image Preprocessing**: Ensure images are in supported formats before upload
+- **Result Interpretation**: Use fakeness scores alongside other verification methods
+- **Monitoring**: Track API response times and accuracy in your use case
 
 ## API Reference
 
-For complete API documentation:
-
-<CardGroup cols={2}>
-  <Card
-    title="Deepfake Detection APIs"
-    icon="video"
-    href="/api-reference/faceswap/detect"
-  >
-    Complete documentation for face swap and deepfake detection
-  </Card>
-  <Card
-    title="Voice Detection APIs"
-    icon="microphone"
-    href="/api-reference/voice/detect"
-  >
-    Complete documentation for voice clone and audio analysis
-  </Card>
-</CardGroup>
+<Card
+  title="Deepfake Detection API"
+  icon="shield-check"
+  href="#api-integration"
+>
+  Complete documentation for image-based deepfake detection with code examples
+</Card>
