@@ -26,9 +26,13 @@
             "group": "Detection Methods",
             "pages": [
               "detection/overview",
+              "detection/ai-image-detection",
               "detection/text-and-links",
               "detection/deepfake-voice-clone",
-              "detection/genai-content"
+              "detection/genai-content",
+              "detection/postman-guide",
+              "detection/health-monitoring",
+              "detection/production-deployment"
             ]
           },
           {
@@ -100,10 +104,12 @@
               {
                 "group": "Defence APIs",
                 "pages": [
+                  "api-reference/endpoint/predict",
+                  "api-reference/endpoint/ai-content-detection",
+                  "api-reference/endpoint/get",
                   "api-reference/endpoint/faceswap-detection",
                   "api-reference/endpoint/voice-clone-detection",
                   "api-reference/endpoint/document-fraud-detection",
-                  "api-reference/endpoint/ai-content-detection",
                   "api-reference/endpoint/ai-agent"
                 ]
               },
@@ -142,8 +148,7 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
-    "href": "https://www.scam.ai"
+    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [

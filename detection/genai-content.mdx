@@ -82,140 +82,328 @@ Identify AI-generated text content:
 
 ## API Integration
 
-### Detect AI-Generated Images
+### Health Check
 
 ```bash
-POST /api/ai-content/upload-detect
+GET /health
 ```
 
-Analyze images for AI generation:
+Check if the AI Image Detection service is running:
 
+**Response:**
 ```json
 {
-  "image_data": "base64_encoded_image",
-  "analyze_metadata": true,
-  "identify_platform": true
+  "status": "healthy"
 }
 ```
 
-### Analyze Video Content
+### Detect AI-Generated Images (Base64)
 
 ```bash
-POST /api/defence/detect-deepfake
+POST /predict?model_name=default&model_version=v0.1
 ```
 
-Detect AI-generated videos:
+Analyze images for AI generation using Base64 encoded image data:
 
+**Request:**
 ```json
 {
-  "video_url": "https://example.com/video.mp4",
-  "analysis_depth": "comprehensive",
-  "check_platforms": ["veo3", "sora", "runway", "kling"]
+  "task_id": "unique_task_identifier",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "type": "image",
+    "payload": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+  }
 }
 ```
 
-### Text Content Analysis
+### Detect AI-Generated Images (URL)
 
 ```bash
-POST /api/ai-content/analyze-text
+POST /predict?model_name=default&model_version=v0.1
 ```
 
-Identify AI-generated text:
+Analyze images for AI generation using image URL:
 
+**Request:**
 ```json
 {
-  "text_content": "Sample text to analyze for AI generation...",
-  "language": "en",
-  "check_models": ["gpt", "claude", "gemini"]
+  "task_id": "unique_task_identifier", 
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "type": "image",
+    "payload": "https://example.com/image.jpg"
+  }
 }
 ```
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `model_name` | string | No | Model name to use (default: "default") |
+| `model_version` | string | No | Model version (default: "v0.1") |
+| `task_id` | string | Yes | Unique identifier for the detection task |
+| `timestamp` | string | Yes | ISO 8601 timestamp of the request |
+| `data.type` | string | Yes | Data type - must be "image" |
+| `data.payload` | string | Yes | Base64 encoded image or image URL |
 
 ## Response Format
 
 ### Image Detection Response
 
+The API returns a JSON response with detection results:
+
 ```json
 {
-  "is_ai_generated": true,
-  "confidence_score": 0.92,
-  "detected_platform": "midjourney",
-  "platform_confidence": 0.87,
-  "analysis_details": {
-    "noise_patterns": {
-      "detected": true,
-      "signature": "midjourney_v6",
-      "confidence": 0.89
-    },
-    "compression_artifacts": {
-      "ai_specific": true,
-      "pattern_type": "diffusion_artifacts"
-    },
-    "style_analysis": {
-      "aesthetic_score": 0.94,
-      "typical_ai_characteristics": ["smooth_gradients", "perfect_symmetry"]
+  "task_id": "unique_task_identifier",
+  "status": "completed",
+  "timestamp": "2024-01-15T10:30:05.123Z",
+  "result": {
+    "is_ai_generated": true,
+    "confidence_score": 0.92,
+    "detected_platform": "midjourney",
+    "platform_confidence": 0.87,
+    "analysis_summary": {
+      "image_authenticity": "synthetic",
+      "generation_likelihood": "high",
+      "human_likelihood": "low"
     }
   },
-  "metadata_analysis": {
-    "creation_software": "unknown",
-    "editing_history": "minimal",
-    "suspicious_patterns": true
+  "processing_time_ms": 1247
+}
+```
+
+### Success Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `task_id` | string | The unique task identifier from the request |
+| `status` | string | Processing status: "completed", "processing", "failed" |
+| `timestamp` | string | ISO timestamp when processing completed |
+| `result.is_ai_generated` | boolean | Whether the image is AI-generated |
+| `result.confidence_score` | number | Overall confidence (0.0 - 1.0) |
+| `result.detected_platform` | string | Identified AI platform (if detected) |
+| `result.platform_confidence` | number | Platform detection confidence (0.0 - 1.0) |
+| `processing_time_ms` | number | Time taken to process the request |
+
+### Error Response
+
+If there's an error in processing, the API returns:
+
+```json
+{
+  "task_id": "unique_task_identifier",
+  "status": "failed",
+  "timestamp": "2024-01-15T10:30:05.123Z",
+  "error": {
+    "code": "INVALID_IMAGE",
+    "message": "Unable to process the provided image data",
+    "details": "Image format not supported or corrupted data"
   }
 }
 ```
 
-### Video Detection Response
+### Code Examples
 
-```json
-{
-  "is_synthetic": true,
-  "confidence_score": 0.88,
-  "detected_platform": "google_veo3",
-  "analysis_results": {
-    "temporal_consistency": 0.76,
-    "motion_patterns": {
-      "natural": false,
-      "ai_generated_motion": true
-    },
-    "generation_artifacts": [
-      "frame_blending",
-      "motion_blur_inconsistency",
-      "lighting_artifacts"
-    ]
-  },
-  "frame_analysis": {
-    "total_frames": 240,
-    "suspicious_frames": 67,
-    "confidence_per_segment": [
-      {"start": 0, "end": 5, "confidence": 0.91},
-      {"start": 5, "end": 10, "confidence": 0.85}
-    ]
+<CodeGroup>
+
+```bash cURL
+# Health Check
+curl -X GET "http://localhost:8000/health"
+
+# Detect AI Image (Base64)
+curl -X POST "http://localhost:8000/predict?model_name=default&model_version=v0.1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": "test_image_001",
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "data": {
+      "type": "image",
+      "payload": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    }
+  }'
+
+# Detect AI Image (URL)
+curl -X POST "http://localhost:8000/predict?model_name=default&model_version=v0.1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": "test_image_002",
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "data": {
+      "type": "image",
+      "payload": "https://example.com/suspicious-image.jpg"
+    }
+  }'
+```
+
+```python Python
+import requests
+import json
+from datetime import datetime
+import base64
+
+# API Configuration
+BASE_URL = "http://localhost:8000"
+MODEL_NAME = "default"
+MODEL_VERSION = "v0.1"
+
+def health_check():
+    """Check if the API is healthy"""
+    response = requests.get(f"{BASE_URL}/health")
+    return response.json()
+
+def detect_ai_image_base64(image_path, task_id=None):
+    """Detect AI generation in image using base64"""
+    # Read and encode image
+    with open(image_path, "rb") as image_file:
+        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+    
+    payload = {
+        "task_id": task_id or f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        "timestamp": datetime.now().isoformat() + "Z",
+        "data": {
+            "type": "image",
+            "payload": image_data
+        }
+    }
+    
+    response = requests.post(
+        f"{BASE_URL}/predict",
+        params={"model_name": MODEL_NAME, "model_version": MODEL_VERSION},
+        headers={"Content-Type": "application/json"},
+        json=payload
+    )
+    
+    return response.json()
+
+def detect_ai_image_url(image_url, task_id=None):
+    """Detect AI generation in image using URL"""
+    payload = {
+        "task_id": task_id or f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        "timestamp": datetime.now().isoformat() + "Z",
+        "data": {
+            "type": "image",
+            "payload": image_url
+        }
+    }
+    
+    response = requests.post(
+        f"{BASE_URL}/predict",
+        params={"model_name": MODEL_NAME, "model_version": MODEL_VERSION},
+        headers={"Content-Type": "application/json"},
+        json=payload
+    )
+    
+    return response.json()
+
+# Example usage
+if __name__ == "__main__":
+    # Check health
+    health = health_check()
+    print(f"API Health: {health}")
+    
+    # Detect AI in image URL
+    result = detect_ai_image_url("https://example.com/test-image.jpg")
+    print(f"Detection Result: {result}")
+```
+
+```javascript JavaScript
+const API_BASE_URL = 'http://localhost:8000';
+const MODEL_NAME = 'default';
+const MODEL_VERSION = 'v0.1';
+
+// Health Check
+async function healthCheck() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`);
+    return await response.json();
+  } catch (error) {
+    console.error('Health check failed:', error);
+    throw error;
   }
 }
-```
 
-### Text Detection Response
+// Detect AI Image (Base64)
+async function detectAIImageBase64(imageBase64, taskId = null) {
+  const payload = {
+    task_id: taskId || `task_${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    data: {
+      type: 'image',
+      payload: imageBase64
+    }
+  };
 
-```json
-{
-  "is_ai_generated": true,
-  "confidence_score": 0.85,
-  "detected_model": "gpt-4",
-  "analysis_details": {
-    "perplexity_score": 23.4,
-    "linguistic_patterns": {
-      "repetitive_structures": true,
-      "vocabulary_sophistication": "high",
-      "coherence_score": 0.92
-    },
-    "suspicious_indicators": [
-      "overly_formal_tone",
-      "lack_of_personal_experience",
-      "generic_examples"
-    ]
-  },
-  "human_likelihood": 0.15
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/predict?model_name=${MODEL_NAME}&model_version=${MODEL_VERSION}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Detection failed:', error);
+    throw error;
+  }
 }
+
+// Detect AI Image (URL)
+async function detectAIImageURL(imageURL, taskId = null) {
+  const payload = {
+    task_id: taskId || `task_${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    data: {
+      type: 'image',
+      payload: imageURL
+    }
+  };
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/predict?model_name=${MODEL_NAME}&model_version=${MODEL_VERSION}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Detection failed:', error);
+    throw error;
+  }
+}
+
+// Example usage
+async function main() {
+  try {
+    // Check API health
+    const health = await healthCheck();
+    console.log('API Health:', health);
+    
+    // Detect AI in image
+    const result = await detectAIImageURL('https://example.com/test-image.jpg');
+    console.log('Detection Result:', result);
+    
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+main();
 ```
+
+</CodeGroup>
 
 ## Platform-Specific Detection
 

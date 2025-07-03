@@ -1,4 +1,571 @@
 ---
-title: 'Get Plants'
-openapi: 'GET /plants'
+title: "Health Check & API Info"
+openapi: "GET /health"
 ---
+
+## Health Check Endpoint
+
+### GET /health
+
+Monitor the status and health of the AI Detection service.
+
+**Purpose**: Verify that the service is running and AI models are properly loaded before making detection requests.
+
+#### Response Format
+
+```json
+{
+  "status": "healthy",
+  "models_loaded": true,
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0",
+  "uptime_seconds": 3600,
+  "memory_usage": {
+    "total_mb": 2048,
+    "used_mb": 1024,
+    "available_mb": 1024
+  }
+}
+```
+
+<ResponseField name="status" type="string">
+  Overall service health status
+  - `"healthy"`: Service is running normally
+  - `"degraded"`: Service running but with issues
+  - `"unhealthy"`: Service has critical problems
+</ResponseField>
+
+<ResponseField name="models_loaded" type="boolean">
+  Whether AI detection models are loaded and ready
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp when health check was performed
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  Current version of the AI detection service
+</ResponseField>
+
+<ResponseField name="uptime_seconds" type="number">
+  Service uptime in seconds since last restart
+</ResponseField>
+
+<ResponseField name="memory_usage" type="object">
+  Memory usage statistics (optional)
+</ResponseField>
+
+#### Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8003/health"
+```
+
+```python Python
+import requests
+
+def check_service_health():
+    """
+    Check AI detection service health
+    
+    Returns:
+        dict: Health status information
+        bool: True if service is healthy, False otherwise
+    """
+    try:
+        response = requests.get("http://localhost:8003/health", timeout=10)
+        response.raise_for_status()
+        
+        health_data = response.json()
+        is_healthy = (
+            health_data.get('status') == 'healthy' and 
+            health_data.get('models_loaded') == True
+        )
+        
+        return health_data, is_healthy
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Health check failed: {e}")
+        return None, False
+
+# Example usage
+health_info, is_ready = check_service_health()
+if is_ready:
+    print("✅ Service is healthy and ready for detection requests")
+    print(f"Uptime: {health_info['uptime_seconds']} seconds")
+else:
+    print("❌ Service is not ready")
+```
+
+```javascript JavaScript
+async function checkServiceHealth() {
+    /**
+     * Check AI detection service health
+     * 
+     * @returns {Object} Health status and readiness
+     */
+    try {
+        const response = await fetch('http://localhost:8003/health', {
+            method: 'GET',
+            timeout: 10000
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const healthData = await response.json();
+        const isHealthy = (
+            healthData.status === 'healthy' && 
+            healthData.models_loaded === true
+        );
+        
+        return { healthData, isHealthy };
+        
+    } catch (error) {
+        console.error('Health check failed:', error);
+        return { healthData: null, isHealthy: false };
+    }
+}
+
+// Example usage
+checkServiceHealth().then(({ healthData, isHealthy }) => {
+    if (isHealthy) {
+        console.log('✅ Service is healthy and ready');
+        console.log(`Uptime: ${healthData.uptime_seconds} seconds`);
+    } else {
+        console.log('❌ Service is not ready');
+    }
+});
+```
+</CodeGroup>
+
+---
+
+## API Information Endpoint
+
+### GET /
+
+Get general information about the AI Detection API and available endpoints.
+
+**Purpose**: Discover API capabilities, version information, and available endpoints.
+
+#### Response Format
+
+```json
+{
+  "service": "AI Image Detection API",
+  "version": "1.0.0",
+  "description": "Detect AI-generated images with high accuracy",
+  "endpoints": {
+    "/health": "Service health check",
+    "/models": "Available detection models",
+    "/predict": "File upload detection",
+    "/detect": "Base64 image detection"
+  },
+  "supported_formats": ["JPEG", "PNG", "BMP", "GIF", "WEBP"],
+  "max_file_size_mb": 10,
+  "documentation": "https://docs.example.com/ai-detection"
+}
+```
+
+<ResponseField name="service" type="string">
+  Service name and description
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  Current API version
+</ResponseField>
+
+<ResponseField name="endpoints" type="object">
+  Available API endpoints with descriptions
+</ResponseField>
+
+<ResponseField name="supported_formats" type="array">
+  List of supported image formats
+</ResponseField>
+
+<ResponseField name="max_file_size_mb" type="number">
+  Maximum allowed file size in megabytes
+</ResponseField>
+
+#### Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8003/"
+```
+
+```python Python
+import requests
+
+def get_api_info():
+    """
+    Get API information and capabilities
+    
+    Returns:
+        dict: API information
+    """
+    try:
+        response = requests.get("http://localhost:8003/", timeout=10)
+        response.raise_for_status()
+        
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to get API info: {e}")
+        return None
+
+# Example usage
+api_info = get_api_info()
+if api_info:
+    print(f"Service: {api_info['service']}")
+    print(f"Version: {api_info['version']}")
+    print("Available endpoints:")
+    for endpoint, description in api_info['endpoints'].items():
+        print(f"  {endpoint}: {description}")
+```
+
+```javascript JavaScript
+async function getAPIInfo() {
+    /**
+     * Get API information and capabilities
+     * 
+     * @returns {Object} API information
+     */
+    try {
+        const response = await fetch('http://localhost:8003/', {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('Failed to get API info:', error);
+        return null;
+    }
+}
+
+// Example usage
+getAPIInfo().then(apiInfo => {
+    if (apiInfo) {
+        console.log(`Service: ${apiInfo.service}`);
+        console.log(`Version: ${apiInfo.version}`);
+        console.log('Available endpoints:');
+        Object.entries(apiInfo.endpoints).forEach(([endpoint, description]) => {
+            console.log(`  ${endpoint}: ${description}`);
+        });
+    }
+});
+```
+</CodeGroup>
+
+---
+
+## Models Information Endpoint
+
+### GET /models
+
+Get information about available AI detection models.
+
+**Purpose**: Discover which AI models are available for detection and their characteristics.
+
+#### Response Format
+
+```json
+{
+  "available_models": [
+    {
+      "name": "patchcraft",
+      "version": "v0.1",
+      "description": "Primary AI detection model with high accuracy",
+      "accuracy": "96.7%",
+      "supported_formats": ["JPEG", "PNG", "BMP", "GIF", "WEBP"],
+      "optimal_image_size": "1024x1024",
+      "processing_time_ms": 200,
+      "status": "active"
+    }
+  ],
+  "default_model": "patchcraft",
+  "total_models": 1
+}
+```
+
+<ResponseField name="available_models" type="array">
+  List of available detection models
+  
+  <Expandable title="Model object properties">
+    <ResponseField name="name" type="string">
+      Model identifier name
+    </ResponseField>
+    <ResponseField name="version" type="string">
+      Model version
+    </ResponseField>
+    <ResponseField name="description" type="string">
+      Model description and capabilities
+    </ResponseField>
+    <ResponseField name="accuracy" type="string">
+      Model accuracy percentage
+    </ResponseField>
+    <ResponseField name="supported_formats" type="array">
+      Image formats supported by this model
+    </ResponseField>
+    <ResponseField name="optimal_image_size" type="string">
+      Recommended image dimensions for best performance
+    </ResponseField>
+    <ResponseField name="processing_time_ms" type="number">
+      Average processing time in milliseconds
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Model status: `"active"`, `"loading"`, `"inactive"`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="default_model" type="string">
+  Name of the default model used when none specified
+</ResponseField>
+
+<ResponseField name="total_models" type="number">
+  Total number of available models
+</ResponseField>
+
+#### Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8003/models"
+```
+
+```python Python
+import requests
+
+def get_available_models():
+    """
+    Get information about available AI detection models
+    
+    Returns:
+        dict: Models information
+    """
+    try:
+        response = requests.get("http://localhost:8003/models", timeout=10)
+        response.raise_for_status()
+        
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to get models info: {e}")
+        return None
+
+def check_model_availability(model_name="patchcraft"):
+    """
+    Check if a specific model is available and active
+    
+    Args:
+        model_name (str): Name of the model to check
+        
+    Returns:
+        bool: True if model is available and active
+    """
+    models_info = get_available_models()
+    if not models_info:
+        return False
+    
+    for model in models_info.get('available_models', []):
+        if model['name'] == model_name and model['status'] == 'active':
+            return True
+    
+    return False
+
+# Example usage
+models_info = get_available_models()
+if models_info:
+    print(f"Available models: {models_info['total_models']}")
+    print(f"Default model: {models_info['default_model']}")
+    
+    for model in models_info['available_models']:
+        print(f"\nModel: {model['name']} v{model['version']}")
+        print(f"  Accuracy: {model['accuracy']}")
+        print(f"  Status: {model['status']}")
+        print(f"  Avg Processing Time: {model['processing_time_ms']}ms")
+
+# Check specific model
+if check_model_availability("patchcraft"):
+    print("✅ Patchcraft model is ready for detection")
+else:
+    print("❌ Patchcraft model is not available")
+```
+
+```javascript JavaScript
+async function getAvailableModels() {
+    /**
+     * Get information about available AI detection models
+     * 
+     * @returns {Object} Models information
+     */
+    try {
+        const response = await fetch('http://localhost:8003/models', {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('Failed to get models info:', error);
+        return null;
+    }
+}
+
+async function checkModelAvailability(modelName = 'patchcraft') {
+    /**
+     * Check if a specific model is available and active
+     * 
+     * @param {string} modelName - Name of the model to check
+     * @returns {boolean} True if model is available and active
+     */
+    const modelsInfo = await getAvailableModels();
+    if (!modelsInfo) return false;
+    
+    return modelsInfo.available_models.some(
+        model => model.name === modelName && model.status === 'active'
+    );
+}
+
+// Example usage
+getAvailableModels().then(modelsInfo => {
+    if (modelsInfo) {
+        console.log(`Available models: ${modelsInfo.total_models}`);
+        console.log(`Default model: ${modelsInfo.default_model}`);
+        
+        modelsInfo.available_models.forEach(model => {
+            console.log(`\nModel: ${model.name} v${model.version}`);
+            console.log(`  Accuracy: ${model.accuracy}`);
+            console.log(`  Status: ${model.status}`);
+            console.log(`  Avg Processing Time: ${model.processing_time_ms}ms`);
+        });
+    }
+});
+
+// Check specific model
+checkModelAvailability('patchcraft').then(isAvailable => {
+    if (isAvailable) {
+        console.log('✅ Patchcraft model is ready for detection');
+    } else {
+        console.log('❌ Patchcraft model is not available');
+    }
+});
+```
+</CodeGroup>
+
+## Best Practices
+
+### Service Readiness Check
+
+Before making detection requests, ensure the service is ready:
+
+```python
+def wait_for_service_ready(max_wait_seconds=60):
+    """
+    Wait for the AI detection service to be ready
+    
+    Args:
+        max_wait_seconds (int): Maximum time to wait
+        
+    Returns:
+        bool: True if service becomes ready, False if timeout
+    """
+    import time
+    
+    start_time = time.time()
+    
+    while time.time() - start_time < max_wait_seconds:
+        health_info, is_ready = check_service_health()
+        
+        if is_ready:
+            print("✅ Service is ready!")
+            return True
+            
+        print("⏳ Waiting for service to be ready...")
+        time.sleep(5)
+    
+    print("❌ Service did not become ready within timeout")
+    return False
+
+# Example usage
+if wait_for_service_ready():
+    # Proceed with detection requests
+    result = detect_ai_image("sample.jpg")
+else:
+    print("Cannot proceed - service not ready")
+```
+
+### Health Monitoring
+
+Implement regular health checks in production:
+
+```javascript
+class ServiceMonitor {
+    constructor(checkIntervalMs = 30000) {
+        this.checkInterval = checkIntervalMs;
+        this.isMonitoring = false;
+        this.healthStatus = null;
+    }
+    
+    startMonitoring() {
+        if (this.isMonitoring) return;
+        
+        this.isMonitoring = true;
+        console.log('🔍 Starting service monitoring...');
+        
+        const monitor = async () => {
+            while (this.isMonitoring) {
+                try {
+                    const { healthData, isHealthy } = await checkServiceHealth();
+                    this.healthStatus = { healthData, isHealthy, lastCheck: new Date() };
+                    
+                    if (!isHealthy) {
+                        console.warn('⚠️ Service health check failed:', healthData);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Health monitoring error:', error);
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, this.checkInterval));
+            }
+        };
+        
+        monitor();
+    }
+    
+    stopMonitoring() {
+        this.isMonitoring = false;
+        console.log('🛑 Stopped service monitoring');
+    }
+    
+    getLastHealthStatus() {
+        return this.healthStatus;
+    }
+}
+
+// Example usage
+const monitor = new ServiceMonitor(30000); // Check every 30 seconds
+monitor.startMonitoring();
+```
+
+<Info>
+**Production Tip**: Implement health checks as part of your application startup sequence and monitoring strategy. Regular health checks help ensure reliable service operation.
+</Info>
+
+<Warning>
+**Service Dependencies**: Always check that `models_loaded` is `true` before making detection requests. Requests made before models are loaded will fail.
+</Warning>

@@ -1,0 +1,464 @@
+---
+title: 'Postman Collection Guide'
+description: 'Complete guide to testing the AI Detection API using the provided Postman collection'
+---
+
+## Getting Started with Postman
+
+This guide will help you test the AI Image Detection API using the provided Postman collection. Perfect for beginners who want to understand how the API works before integrating it into their applications.
+
+### Prerequisites
+
+1. **Postman Installed**: Download from [postman.com](https://www.postman.com/downloads/)
+2. **AI Detection Service Running**: Ensure the service is running on `http://localhost:8003`
+3. **Sample Images**: Have some test images ready (both AI-generated and real photos)
+
+## Importing the Collection
+
+### Step 1: Download the Collection
+
+You can obtain the Postman collection file from your development team or project repository. The collection file will be named:
+```
+AI Image Detector API - Complete Tests.postman_collection.json
+```
+
+### Step 2: Import into Postman
+
+1. Open Postman
+2. Click the **"Import"** button (top left)
+3. Select **"Upload Files"**
+4. Choose the collection JSON file
+5. Click **"Import"**
+
+You should now see **"AI Image Detector API - Complete Tests"** in your collections panel.
+
+## Setting Up Environment Variables
+
+### Create a New Environment
+
+1. Click the **Environment** icon (gear icon in top right)
+2. Click **"Create Environment"**
+3. Name it `"AI Detection Local"`
+
+### Add Environment Variables
+
+Add these variables to your environment:
+
+| Variable | Value | Description |
+|----------|-------|-------------|
+| `base_url` | `http://localhost:8003` | API base URL |
+| `threshold_low` | `0.2` | Low sensitivity threshold |
+| `threshold_standard` | `0.5` | Standard threshold |
+| `threshold_high` | `0.8` | High precision threshold |
+
+<Tip>
+**Environment Variables**: Using environment variables makes it easy to switch between local development and production environments later.
+</Tip>
+
+## Collection Structure
+
+The collection is organized into logical groups:
+
+### 1. Health & Info
+- **Health Check**: Verify service is running
+- **API Information**: Get service details
+- **Get Available Models**: Check loaded models
+
+### 2. File Upload Detection  
+- **Standard Upload**: Basic file upload with default threshold
+- **High Threshold Test**: Test with stricter detection (0.8)
+- **Low Threshold Test**: Test with sensitive detection (0.2)
+
+### 3. Base64 Detection
+- **Full Base64 Request**: Complete request with all parameters
+- **Minimal Base64 Request**: Simplified request format
+
+### 4. Error Testing
+- **No File Provided**: Test error handling
+- **Invalid Base64 Data**: Test malformed data handling
+- **Invalid Threshold**: Test parameter validation
+
+## Step-by-Step Testing Guide
+
+### Step 1: Health Check
+
+Start by verifying the service is running:
+
+1. **Open "Health Check" request**
+2. **Click "Send"**
+3. **Expected Response**:
+   ```json
+   {
+     "status": "healthy",
+     "models_loaded": true,
+     "timestamp": "2024-01-15T10:30:00Z"
+   }
+   ```
+
+✅ **Success**: Status is "healthy" and models_loaded is true  
+❌ **Failure**: Check if service is running on port 8003
+
+### Step 2: API Information
+
+Get an overview of available endpoints:
+
+1. **Open "API Information" request**
+2. **Click "Send"**  
+3. **Review the response** to understand available endpoints
+
+### Step 3: Check Available Models
+
+Verify which AI models are loaded:
+
+1. **Open "Get Available Models" request**
+2. **Click "Send"**
+3. **Expected Response**:
+   ```json
+   {
+     "available_models": [
+       {
+         "name": "patchcraft",
+         "version": "v0.1",
+         "accuracy": "96.7%",
+         "status": "active"
+       }
+     ]
+   }
+   ```
+
+### Step 4: File Upload Testing
+
+Now test the main detection functionality:
+
+#### Standard File Upload
+
+1. **Open "Predict - Standard Upload" request**
+2. **In the Body tab**, click **"Select Files"** next to the `file` parameter
+3. **Choose a test image** (preferably an AI-generated one)
+4. **Set threshold** to `0.5` (or use the environment variable `{{threshold_standard}}`)
+5. **Click "Send"**
+
+**Expected Response**:
+```json
+{
+  "likely_ai_generated": true,
+  "confidence_score": 0.87,
+  "processing_time_ms": 245,
+  "model_info": {
+    "name": "patchcraft",
+    "version": "v0.1"
+  },
+  "image_info": {
+    "width": 1024,
+    "height": 1024,
+    "format": "JPEG"
+  }
+}
+```
+
+#### Test Different Thresholds
+
+**High Threshold (0.8)**:
+1. **Open "Predict - High Threshold Test"**
+2. **Upload the same image**
+3. **Compare results** - should be more conservative
+
+**Low Threshold (0.2)**:
+1. **Open "Predict - Low Threshold Test"**  
+2. **Upload the same image**
+3. **Compare results** - should be more sensitive
+
+### Step 5: Base64 Detection Testing
+
+Test the base64 endpoint for programmatic integration:
+
+#### Full Base64 Request
+
+1. **Open "Detect - Base64 Input" request**
+2. **Review the JSON body** - it contains a sample base64 image
+3. **Click "Send"**
+4. **Expected Response**:
+   ```json
+   {
+     "task_id": "postman_base64_test",
+     "result": {
+       "status": "completed",
+       "confidence_score": 0.87,
+       "likely_ai_generated": true
+     }
+   }
+   ```
+
+#### Minimal Base64 Request
+
+1. **Open "Detect - Minimal Request"**
+2. **Notice the simplified JSON structure**
+3. **Click "Send"**
+
+### Step 6: Error Testing
+
+Test how the API handles invalid requests:
+
+#### No File Provided
+
+1. **Open "No File Provided" request**
+2. **Click "Send"**
+3. **Expected**: 400 error with descriptive message
+
+#### Invalid Base64 Data
+
+1. **Open "Invalid Base64 Data" request**
+2. **Click "Send"**
+3. **Expected**: 500 error indicating detection failure
+
+#### Invalid Threshold
+
+1. **Open "Invalid Threshold" request**
+2. **Notice threshold is set to 1.5 (invalid)**
+3. **Click "Send"**
+4. **Expected**: 400 error about threshold range
+
+## Understanding the Test Results
+
+### Automated Tests
+
+Each request includes automated tests that verify:
+
+#### Health Check Tests
+- ✅ Status code is 200
+- ✅ Response contains "status" field
+- ✅ Status equals "healthy"
+- ✅ Models are loaded
+
+#### Detection Tests
+- ✅ Status code is 200  
+- ✅ Response contains confidence_score
+- ✅ Confidence score is between 0 and 1
+- ✅ Response contains processing_time_ms
+- ✅ Response contains likely_ai_generated boolean
+
+#### Error Tests
+- ✅ Appropriate error status codes (400, 500)
+- ✅ Error messages are present
+- ✅ Error details are descriptive
+
+### Interpreting Results
+
+<AccordionGroup>
+  <Accordion title="Confidence Score Interpretation">
+    **0.0 - 0.3**: Very likely human-created  
+    **0.3 - 0.7**: Uncertain, depends on threshold  
+    **0.7 - 1.0**: Very likely AI-generated  
+    
+    The `likely_ai_generated` boolean is based on your threshold setting.
+  </Accordion>
+  
+  <Accordion title="Processing Time">
+    **< 500ms**: Excellent performance  
+    **500ms - 1s**: Good performance  
+    **> 1s**: Consider image optimization  
+    
+    Large images take longer to process.
+  </Accordion>
+  
+  <Accordion title="Threshold Effects">
+    **Low Threshold (0.2)**: More false positives, catches more AI images  
+    **Standard Threshold (0.5)**: Balanced accuracy  
+    **High Threshold (0.8)**: Fewer false positives, might miss some AI images
+  </Accordion>
+</AccordionGroup>
+
+## Creating Your Own Base64 Test Data
+
+### Convert Image to Base64
+
+If you want to test with your own images in the base64 endpoint:
+
+<CodeGroup>
+```bash Terminal
+# Convert image to base64 (macOS/Linux)
+base64 -i your_image.jpg | tr -d '\n'
+
+# On Windows with PowerShell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("your_image.jpg"))
+```
+
+```python Python
+import base64
+
+def image_to_base64(image_path):
+    with open(image_path, 'rb') as image_file:
+        base64_string = base64.b64encode(image_file.read()).decode('utf-8')
+    return base64_string
+
+# Usage
+base64_data = image_to_base64("your_image.jpg")
+print(base64_data)
+```
+
+```javascript JavaScript
+function imageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Remove the data URL prefix
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Usage with file input
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    const base64 = await imageToBase64(file);
+    console.log(base64);
+});
+```
+</CodeGroup>
+
+### Update Base64 Request
+
+1. **Copy your base64 string**
+2. **Open the base64 request in Postman**
+3. **Replace the `payload` value** with your base64 string
+4. **Update the `task_id`** to something descriptive
+5. **Send the request**
+
+## Troubleshooting Common Issues
+
+<AccordionGroup>
+  <Accordion title="Connection Refused Error">
+    **Problem**: Cannot connect to localhost:8003
+    
+    **Solutions**:
+    1. Verify AI Detection service is running
+    2. Check if port 8003 is correct
+    3. Try `curl http://localhost:8003/health` in terminal
+  </Accordion>
+  
+  <Accordion title="Models Not Loaded">
+    **Problem**: `models_loaded: false` in health check
+    
+    **Solutions**:
+    1. Wait a few minutes for models to load
+    2. Check service logs for model loading errors
+    3. Verify model files are present
+  </Accordion>
+  
+  <Accordion title="File Upload Fails">
+    **Problem**: Error when uploading files
+    
+    **Solutions**:
+    1. Check file format (JPEG, PNG, BMP, GIF, WEBP)
+    2. Verify file size is under 10MB
+    3. Try a different image file
+  </Accordion>
+  
+  <Accordion title="Base64 Errors">
+    **Problem**: Invalid base64 data errors
+    
+    **Solutions**:
+    1. Ensure no data URI prefix (`data:image/...;base64,`)
+    2. Check base64 string is complete
+    3. Verify source image is valid
+  </Accordion>
+  
+  <Accordion title="Tests Failing">
+    **Problem**: Automated tests show failures
+    
+    **Solutions**:
+    1. Check response format matches expected structure
+    2. Verify service is returning correct data types
+    3. Review test console for specific failures
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Testing Scenarios
+
+### Batch Testing Multiple Images
+
+Create a test run with different image types:
+
+1. **Real photographs** (should return low confidence scores)
+2. **AI-generated images** (should return high confidence scores)  
+3. **Edge cases** (screenshots, heavily edited photos)
+4. **Different formats** (JPEG, PNG, etc.)
+5. **Various sizes** (small thumbnails, large images)
+
+### Performance Testing
+
+Test API performance under different conditions:
+
+1. **Small images** (< 100KB) - should be very fast
+2. **Large images** (5-10MB) - check processing time
+3. **Multiple concurrent requests** - test with Postman Runner
+4. **Different thresholds** - compare processing times
+
+### Integration Testing
+
+Simulate real application usage:
+
+1. **Sequential requests** - health check → model info → detection
+2. **Error handling** - test invalid inputs
+3. **Task tracking** - use meaningful task_ids in base64 requests
+4. **Timeout handling** - test with very large images
+
+## Exporting Test Results
+
+### Save Results for Analysis
+
+1. **Run all tests** in the collection
+2. **Use Postman Runner** for batch execution
+3. **Export results** as JSON for analysis
+4. **Document performance metrics** and accuracy
+
+### Share Collection with Team
+
+1. **Export collection** as JSON
+2. **Include environment file**
+3. **Document setup instructions**
+4. **Share testing results** and findings
+
+## Next Steps
+
+Once you've successfully tested the API with Postman:
+
+<CardGroup cols={2}>
+  <Card title="Integration Guide" icon="code" href="/detection/ai-image-detection">
+    Learn how to integrate the API into your application
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/endpoint/predict">
+    Detailed API documentation for all endpoints
+  </Card>
+  <Card title="Error Handling" icon="shield-alt" href="/detection/ai-image-detection#error-handling">
+    Best practices for handling API errors
+  </Card>
+  <Card title="Production Deploy" icon="rocket" href="/deployment/production">
+    Deploy the API for production use
+  </Card>
+</CardGroup>
+
+## Sample Test Report
+
+After running all tests, you should see results like:
+
+```
+✅ Health Check - PASSED (3/3 tests)
+✅ API Information - PASSED (2/2 tests)  
+✅ Get Available Models - PASSED (2/2 tests)
+✅ Standard Upload - PASSED (4/4 tests)
+✅ High Threshold Test - PASSED (200ms)
+✅ Low Threshold Test - PASSED (180ms)
+✅ Base64 Detection - PASSED (4/4 tests)
+✅ Minimal Request - PASSED (220ms)
+✅ Error Handling - PASSED (3/3 tests)
+
+Total: 9/9 requests passed
+Average Response Time: 205ms
+Success Rate: 100%
+```
+
+This indicates your AI Detection API is working correctly and ready for integration! 🎉 

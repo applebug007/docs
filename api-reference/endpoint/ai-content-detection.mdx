@@ -1,4 +1,611 @@
 ---
-title: "AI Content Detection"
-openapi: "POST /ai-content/detect"
+title: "AI Image Detection - Base64"
+openapi: "POST /detect"
 ---
+
+## Overview
+
+The `/detect` endpoint accepts base64-encoded image data for AI detection analysis. This method is ideal for web applications where images are already in base64 format or when integrating with systems that handle image data programmatically.
+
+## Request Parameters
+
+### JSON Body Parameters
+
+<ParamField body="task_id" type="string">
+  Unique identifier for the detection task. Used for tracking and logging purposes.
+  
+  **Format**: Any string up to 100 characters  
+  **Example**: `"user_upload_001"`, `"batch_process_123"`
+</ParamField>
+
+<ParamField body="timestamp" type="string">
+  ISO 8601 timestamp when the request was created.
+  
+  **Format**: `YYYY-MM-DDTHH:mm:ss.sssZ`  
+  **Example**: `"2024-01-15T10:30:00.000Z"`
+</ParamField>
+
+<ParamField body="usecase_environment" type="object">
+  Configuration parameters for the detection process.
+  
+  <Expandable title="usecase_environment properties">
+    <ParamField body="threshold" type="number" default="0.5">
+      Detection sensitivity threshold (0.0 to 1.0)
+      - **0.2**: High sensitivity, more false positives
+      - **0.5**: Balanced detection (recommended)
+      - **0.8**: High precision, fewer false positives
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="ai_model_info" type="object">
+  Information about which AI model to use for detection.
+  
+  <Expandable title="ai_model_info properties">
+    <ParamField body="model_name" type="string" default="patchcraft">
+      Name of the detection model to use
+    </ParamField>
+    <ParamField body="model_version" type="string" default="v0.1">
+      Version of the detection model
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="data" type="object" required>
+  The image data to analyze.
+  
+  <Expandable title="data properties">
+    <ParamField body="type" type="string" required>
+      Type of data being sent. Must be `"image"`
+    </ParamField>
+    <ParamField body="payload" type="string" required>
+      Base64-encoded image data (without data URI prefix)
+      
+      **Format**: Raw base64 string  
+      **Example**: `"/9j/4AAQSkZJRgABAQAAAQABAAD..."`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Request Examples
+
+### Full Request Structure
+
+```json
+{
+  "task_id": "user_upload_001",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "usecase_environment": {
+    "threshold": 0.5
+  },
+  "ai_model_info": {
+    "model_name": "patchcraft",
+    "model_version": "v0.1"
+  },
+  "data": {
+    "type": "image",
+    "payload": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+  }
+}
+```
+
+### Minimal Request
+
+For simple use cases, you can send a minimal request with just the required fields:
+
+```json
+{
+  "data": {
+    "type": "image", 
+    "payload": "/9j/4AAQSkZJRgABAQAAAQABAAD..."
+  }
+}
+```
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "task_id": "user_upload_001",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "result": {
+    "status": "completed",
+    "confidence_score": 0.87,
+    "likely_ai_generated": true,
+    "processing_time_ms": 245,
+    "model_info": {
+      "name": "patchcraft",
+      "version": "v0.1"
+    },
+    "image_metadata": {
+      "width": 1024,
+      "height": 1024,
+      "channels": 3,
+      "format": "JPEG"
+    }
+  }
+}
+```
+
+<ResponseField name="task_id" type="string">
+  The task identifier from the request (or generated if not provided)
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp when the response was generated
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Detection analysis results
+  
+  <Expandable title="result properties">
+    <ResponseField name="status" type="string">
+      Processing status: `"completed"`, `"failed"`, `"error"`
+    </ResponseField>
+    
+    <ResponseField name="confidence_score" type="number">
+      AI detection confidence score (0.0 to 1.0)
+      - 0.0: Definitely real/human-created
+      - 1.0: Definitely AI-generated
+    </ResponseField>
+    
+    <ResponseField name="likely_ai_generated" type="boolean">
+      Whether the image is likely AI-generated based on threshold
+    </ResponseField>
+    
+    <ResponseField name="processing_time_ms" type="number">
+      Time taken to process the image in milliseconds
+    </ResponseField>
+    
+    <ResponseField name="model_info" type="object">
+      Information about the detection model used
+    </ResponseField>
+    
+    <ResponseField name="image_metadata" type="object">
+      Technical information about the processed image
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - Missing Required Fields">
+    ```json
+    {
+      "detail": "Missing required field: data.payload",
+      "status": 400
+    }
+    ```
+    **Cause**: Required fields missing from request  
+    **Solution**: Include all required fields in request body
+  </Accordion>
+  
+  <Accordion title="400 - Invalid Base64">
+    ```json
+    {
+      "detail": "Invalid base64 image data",
+      "status": 400
+    }
+    ```
+    **Cause**: Malformed or incomplete base64 data  
+    **Solution**: Ensure base64 encoding is correct and complete
+  </Accordion>
+  
+  <Accordion title="400 - Invalid Threshold">
+    ```json
+    {
+      "detail": "Threshold must be between 0.0 and 1.0", 
+      "status": 400
+    }
+    ```
+    **Cause**: Threshold value outside valid range  
+    **Solution**: Use threshold between 0.0 and 1.0
+  </Accordion>
+  
+  <Accordion title="413 - Payload Too Large">
+    ```json
+    {
+      "detail": "Base64 payload exceeds size limit",
+      "status": 413
+    }
+    ```
+    **Cause**: Base64 data represents image larger than 10MB  
+    **Solution**: Compress or resize image before encoding
+  </Accordion>
+  
+  <Accordion title="500 - Detection Failed">
+    ```json
+    {
+      "detail": "Detection failed: Unable to process image",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during image analysis or corrupted image data  
+    **Solution**: Verify image integrity and retry
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+# Full request with all parameters
+curl -X POST "http://localhost:8003/detect" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": "curl_test_001",
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "usecase_environment": {
+      "threshold": 0.6
+    },
+    "ai_model_info": {
+      "model_name": "patchcraft",
+      "model_version": "v0.1"
+    },
+    "data": {
+      "type": "image",
+      "payload": "'$(base64 -i sample_image.jpg)'"
+    }
+  }'
+
+# Minimal request
+curl -X POST "http://localhost:8003/detect" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+      "type": "image",
+      "payload": "'$(base64 -i sample_image.jpg)'"
+    }
+  }'
+```
+
+```python Python
+import base64
+import requests
+import json
+from datetime import datetime
+
+def detect_ai_image_base64(image_path, task_id=None, threshold=0.5):
+    """
+    Detect AI generation using base64 encoded image
+    
+    Args:
+        image_path (str): Path to the image file
+        task_id (str): Optional task identifier
+        threshold (float): Detection threshold (0.0-1.0)
+        
+    Returns:
+        dict: Detection results
+    """
+    # Convert image to base64
+    with open(image_path, 'rb') as image_file:
+        image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    
+    # Prepare request payload
+    payload = {
+        "task_id": task_id or f"python_{datetime.now().isoformat()}",
+        "timestamp": datetime.now().isoformat(),
+        "usecase_environment": {
+            "threshold": threshold
+        },
+        "ai_model_info": {
+            "model_name": "patchcraft",
+            "model_version": "v0.1"
+        },
+        "data": {
+            "type": "image",
+            "payload": image_base64
+        }
+    }
+    
+    # Make request
+    url = "http://localhost:8003/detect"
+    headers = {"Content-Type": "application/json"}
+    
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()
+    
+    return response.json()
+
+def detect_ai_image_minimal(image_path):
+    """Minimal detection request with only required fields"""
+    with open(image_path, 'rb') as image_file:
+        image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    
+    payload = {
+        "data": {
+            "type": "image",
+            "payload": image_base64
+        }
+    }
+    
+    url = "http://localhost:8003/detect"
+    headers = {"Content-Type": "application/json"}
+    
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Example usage
+try:
+    # Full request
+    result = detect_ai_image_base64("test_image.jpg", "test_001", 0.7)
+    print(f"Task ID: {result['task_id']}")
+    print(f"AI Generated: {result['result']['likely_ai_generated']}")
+    print(f"Confidence: {result['result']['confidence_score']:.2f}")
+    
+    # Minimal request
+    result_minimal = detect_ai_image_minimal("test_image.jpg")
+    print(f"Minimal Result: {result_minimal['result']['likely_ai_generated']}")
+    
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+
+```javascript JavaScript
+async function detectAIImageBase64(imageFile, taskId = null, threshold = 0.5) {
+    /**
+     * Detect AI generation using base64 encoded image
+     * 
+     * @param {File} imageFile - Image file object
+     * @param {string} taskId - Optional task identifier  
+     * @param {number} threshold - Detection threshold (0.0-1.0)
+     * @returns {Object} Detection results
+     */
+    
+    // Convert File to base64
+    const imageBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Remove data URI prefix (data:image/...;base64,)
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+    });
+    
+    // Prepare request payload
+    const payload = {
+        task_id: taskId || `js_${new Date().toISOString()}`,
+        timestamp: new Date().toISOString(),
+        usecase_environment: {
+            threshold: threshold
+        },
+        ai_model_info: {
+            model_name: "patchcraft",
+            model_version: "v0.1"
+        },
+        data: {
+            type: "image",
+            payload: imageBase64
+        }
+    };
+    
+    try {
+        const response = await fetch('http://localhost:8003/detect', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`${response.status}: ${error.detail}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Detection failed:', error);
+        throw error;
+    }
+}
+
+async function detectAIImageMinimal(imageFile) {
+    /**
+     * Minimal detection request with only required fields
+     */
+    const imageBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+    });
+    
+    const payload = {
+        data: {
+            type: "image",
+            payload: imageBase64
+        }
+    };
+    
+    const response = await fetch('http://localhost:8003/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`${response.status}: ${error.detail}`);
+    }
+    
+    return await response.json();
+}
+
+// Example usage
+document.getElementById('fileInput').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        try {
+            // Full request
+            const result = await detectAIImageBase64(file, 'web_upload', 0.6);
+            console.log('Full Result:', result);
+            
+            // Minimal request
+            const minimalResult = await detectAIImageMinimal(file);
+            console.log('Minimal Result:', minimalResult);
+            
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
+});
+```
+
+```php PHP
+<?php
+function detectAIImageBase64($imagePath, $taskId = null, $threshold = 0.5) {
+    // Convert image to base64
+    $imageData = file_get_contents($imagePath);
+    if ($imageData === false) {
+        throw new Exception("Unable to read image file: $imagePath");
+    }
+    
+    $imageBase64 = base64_encode($imageData);
+    
+    // Prepare request payload
+    $payload = array(
+        'task_id' => $taskId ?: 'php_' . date('c'),
+        'timestamp' => date('c'),
+        'usecase_environment' => array(
+            'threshold' => $threshold
+        ),
+        'ai_model_info' => array(
+            'model_name' => 'patchcraft',
+            'model_version' => 'v0.1'
+        ),
+        'data' => array(
+            'type' => 'image',
+            'payload' => $imageBase64
+        )
+    );
+    
+    // Make request
+    $url = 'http://localhost:8003/detect';
+    $ch = curl_init();
+    
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type: application/json'
+    ));
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode !== 200) {
+        throw new Exception("API request failed with code: $httpCode");
+    }
+    
+    return json_decode($response, true);
+}
+
+function detectAIImageMinimal($imagePath) {
+    $imageData = file_get_contents($imagePath);
+    if ($imageData === false) {
+        throw new Exception("Unable to read image file: $imagePath");
+    }
+    
+    $payload = array(
+        'data' => array(
+            'type' => 'image',
+            'payload' => base64_encode($imageData)
+        )
+    );
+    
+    $url = 'http://localhost:8003/detect';
+    $ch = curl_init();
+    
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type: application/json'
+    ));
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode !== 200) {
+        throw new Exception("API request failed with code: $httpCode");
+    }
+    
+    return json_decode($response, true);
+}
+
+// Example usage
+try {
+    // Full request
+    $result = detectAIImageBase64('test_image.jpg', 'php_test_001', 0.6);
+    echo "Task ID: " . $result['task_id'] . "\n";
+    echo "AI Generated: " . ($result['result']['likely_ai_generated'] ? 'Yes' : 'No') . "\n";
+    echo "Confidence: " . round($result['result']['confidence_score'], 2) . "\n";
+    
+    // Minimal request
+    $minimalResult = detectAIImageMinimal('test_image.jpg');
+    echo "Minimal Result: " . ($minimalResult['result']['likely_ai_generated'] ? 'Yes' : 'No') . "\n";
+    
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+}
+?>
+```
+</CodeGroup>
+
+## Base64 Encoding Tips
+
+<Tip>
+**Proper Base64 Encoding**
+- Remove any data URI prefixes (`data:image/jpeg;base64,`)
+- Ensure the base64 string contains only valid characters (A-Z, a-z, 0-9, +, /, =)
+- Verify the encoded data represents a valid image format
+</Tip>
+
+<Warning>
+**Size Considerations**
+- Base64 encoding increases data size by ~33%
+- A 3MB image becomes ~4MB when base64 encoded
+- Consider image compression before encoding for large files
+</Warning>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Web Applications" icon="globe">
+    Direct integration with canvas, drag-drop uploads, or image manipulation
+  </Card>
+  <Card title="API Integration" icon="code">
+    Programmatic detection when images are already in base64 format
+  </Card>
+  <Card title="Batch Processing" icon="list">
+    Process multiple images programmatically with tracking via task_id
+  </Card>
+  <Card title="Mobile Apps" icon="mobile">
+    Send captured or selected images without file system access
+  </Card>
+</CardGroup>
+
+## Testing with Postman
+
+The provided Postman collection includes tests for this endpoint:
+
+1. **Full Base64 Request**: Complete request with all parameters
+2. **Minimal Base64 Request**: Minimal request with only required fields  
+3. **Error Testing**: Invalid base64 data handling
+4. **Task ID Preservation**: Verify task_id is returned correctly
+
+The collection includes automated tests that verify response structure and task ID handling.

@@ -1,0 +1,936 @@
+---
+title: 'AI Detection Health Monitoring'
+description: 'Monitor the health and performance of your AI image detection system'
+---
+
+## Health Check Endpoint
+
+Monitor the status of the AI Image Detection service:
+
+```bash
+GET /health
+```
+
+### Response Format
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0",
+  "uptime_seconds": 86400,
+  "models_loaded": true,
+  "performance_metrics": {
+    "average_response_time": 245,
+    "requests_per_minute": 120,
+    "success_rate": 99.8,
+    "queue_length": 3,
+    "processing_capacity": 95.2
+  },
+  "system_health": {
+    "cpu_usage": 65.4,
+    "memory_usage": 78.9,
+    "disk_usage": 42.1,
+    "gpu_utilization": 82.3,
+    "available_memory_mb": 1024
+  },
+  "detection_accuracy": {
+    "current_accuracy": 96.7,
+    "false_positive_rate": 2.1,
+    "false_negative_rate": 1.2,
+    "model_confidence_avg": 0.85,
+    "last_calibration": "2024-01-14T18:00:00Z"
+  },
+  "model_status": {
+    "primary_model": "patchcraft",
+    "model_version": "v0.1",
+    "status": "active",
+    "model_size_mb": 250,
+    "last_update": "2024-01-15T06:00:00Z"
+  }
+}
+```
+
+## Monitoring Dashboard
+
+Implement comprehensive monitoring for your AI detection system:
+
+### System Metrics
+
+<CardGroup cols={2}>
+  <Card
+    title="Performance Tracking"
+    icon="chart-line"
+  >
+    Monitor response times, throughput, and image processing capacity
+  </Card>
+  <Card
+    title="Accuracy Monitoring"
+    icon="bullseye"
+  >
+    Track detection accuracy across different image types and formats
+  </Card>
+  <Card
+    title="Error Analysis"
+    icon="bug"
+  >
+    Analyze error patterns, failure modes, and false positive/negative rates
+  </Card>
+  <Card
+    title="Resource Utilization"
+    icon="server"
+  >
+    Monitor CPU, memory, GPU usage, and processing queue status
+  </Card>
+</CardGroup>
+
+### Key Performance Indicators
+
+Monitor these critical metrics for optimal AI detection performance:
+
+#### **Response Time Metrics**
+- **Average Response Time**: Target <500ms for image analysis
+- **File Upload Processing**: <1s for images under 5MB
+- **95th Percentile**: Should remain under 2 seconds
+- **Base64 Processing**: <300ms additional overhead
+
+#### **Accuracy Metrics**
+- **Overall Detection Accuracy**: Target >96% across all image types
+- **False Positive Rate**: Keep below 3% for user experience
+- **False Negative Rate**: Critical to maintain below 2%
+- **Model Confidence**: Average confidence should be >0.8
+
+#### **Availability Metrics**
+- **System Uptime**: Target 99.95% availability
+- **Error Rate**: Keep below 0.5% of total requests
+- **Model Availability**: Ensure models are loaded and ready
+- **Queue Processing**: Maintain real-time processing capabilities
+
+#### **Resource Metrics**
+- **Memory Usage**: Keep below 85% to prevent OOM issues
+- **GPU Utilization**: Optimal range 70-90% for efficiency
+- **Disk Space**: Maintain >20% free space for temporary files
+- **CPU Usage**: Target <80% average usage
+
+## Implementation Guide
+
+### Basic Health Monitoring
+
+Implement regular health checks in your application:
+
+<CodeGroup>
+  ```javascript Node.js
+  const axios = require('axios');
+
+  class AIDetectionHealthMonitor {
+    constructor(baseUrl = 'http://localhost:8003', checkInterval = 60000) {
+      this.baseUrl = baseUrl;
+      this.checkInterval = checkInterval;
+      this.healthStatus = null;
+      this.alertThresholds = {
+        responseTime: 1000, // ms
+        accuracy: 95.0, // %
+        falsePositiveRate: 5.0, // %
+        memoryUsage: 85.0, // %
+        cpuUsage: 80.0, // %
+        gpuUsage: 95.0 // %
+      };
+      this.monitoring = false;
+    }
+
+    async checkHealth() {
+      try {
+        const response = await axios.get(`${this.baseUrl}/health`, {
+          timeout: 10000
+        });
+
+        this.healthStatus = response.data;
+        this.processHealthData(response.data);
+        return response.data;
+      } catch (error) {
+        console.error('AI Detection health check failed:', error);
+        this.handleHealthCheckFailure(error);
+        throw error;
+      }
+    }
+
+    processHealthData(health) {
+      const issues = [];
+
+      // Check response time
+      if (health.performance_metrics?.average_response_time > this.alertThresholds.responseTime) {
+        issues.push({
+          type: 'performance',
+          message: `High response time: ${health.performance_metrics.average_response_time}ms`,
+          severity: 'warning',
+          metric: 'response_time',
+          value: health.performance_metrics.average_response_time
+        });
+      }
+
+      // Check accuracy
+      if (health.detection_accuracy?.current_accuracy < this.alertThresholds.accuracy) {
+        issues.push({
+          type: 'accuracy',
+          message: `Low accuracy: ${health.detection_accuracy.current_accuracy}%`,
+          severity: 'critical',
+          metric: 'accuracy',
+          value: health.detection_accuracy.current_accuracy
+        });
+      }
+
+      // Check false positive rate
+      if (health.detection_accuracy?.false_positive_rate > this.alertThresholds.falsePositiveRate) {
+        issues.push({
+          type: 'accuracy',
+          message: `High false positive rate: ${health.detection_accuracy.false_positive_rate}%`,
+          severity: 'warning',
+          metric: 'false_positive_rate',
+          value: health.detection_accuracy.false_positive_rate
+        });
+      }
+
+      // Check memory usage
+      if (health.system_health?.memory_usage > this.alertThresholds.memoryUsage) {
+        issues.push({
+          type: 'resource',
+          message: `High memory usage: ${health.system_health.memory_usage}%`,
+          severity: 'warning',
+          metric: 'memory_usage',
+          value: health.system_health.memory_usage
+        });
+      }
+
+      // Check CPU usage
+      if (health.system_health?.cpu_usage > this.alertThresholds.cpuUsage) {
+        issues.push({
+          type: 'resource',
+          message: `High CPU usage: ${health.system_health.cpu_usage}%`,
+          severity: 'warning',
+          metric: 'cpu_usage',
+          value: health.system_health.cpu_usage
+        });
+      }
+
+      // Check GPU usage
+      if (health.system_health?.gpu_utilization > this.alertThresholds.gpuUsage) {
+        issues.push({
+          type: 'resource',
+          message: `Critical GPU usage: ${health.system_health.gpu_utilization}%`,
+          severity: 'critical',
+          metric: 'gpu_usage',
+          value: health.system_health.gpu_utilization
+        });
+      }
+
+      // Check models loaded
+      if (!health.models_loaded) {
+        issues.push({
+          type: 'model',
+          message: 'AI detection models not loaded',
+          severity: 'critical',
+          metric: 'models_loaded',
+          value: false
+        });
+      }
+
+      if (issues.length > 0) {
+        this.handleHealthIssues(issues);
+      }
+
+      return issues;
+    }
+
+    handleHealthIssues(issues) {
+      issues.forEach(issue => {
+        if (issue.severity === 'critical') {
+          this.sendCriticalAlert(issue);
+        } else {
+          this.sendWarningAlert(issue);
+        }
+      });
+    }
+
+    sendCriticalAlert(issue) {
+      console.error('🚨 CRITICAL AI DETECTION ISSUE:', issue);
+      // Implement critical alerting (email, SMS, webhook, Slack, etc.)
+      this.notifyOpsTeam(issue);
+    }
+
+    sendWarningAlert(issue) {
+      console.warn('⚠️ AI Detection Warning:', issue);
+      // Implement warning notifications
+    }
+
+    async notifyOpsTeam(issue) {
+      // Example webhook notification
+      try {
+        await axios.post('https://hooks.slack.com/your-webhook', {
+          text: `🚨 AI Detection Critical Alert: ${issue.message}`,
+          attachments: [{
+            color: 'danger',
+            fields: [
+              { title: 'Type', value: issue.type, short: true },
+              { title: 'Metric', value: issue.metric, short: true },
+              { title: 'Value', value: issue.value, short: true },
+              { title: 'Timestamp', value: new Date().toISOString(), short: true }
+            ]
+          }]
+        });
+      } catch (error) {
+        console.error('Failed to send alert:', error);
+      }
+    }
+
+    startMonitoring() {
+      if (this.monitoring) return;
+      
+      this.monitoring = true;
+      console.log('🔍 Starting AI Detection health monitoring...');
+      
+      const monitor = async () => {
+        while (this.monitoring) {
+          try {
+            await this.checkHealth();
+          } catch (error) {
+            console.error('Health monitoring error:', error);
+          }
+          await new Promise(resolve => setTimeout(resolve, this.checkInterval));
+        }
+      };
+      
+      monitor();
+    }
+
+    stopMonitoring() {
+      this.monitoring = false;
+      console.log('🛑 Stopped AI Detection health monitoring');
+    }
+
+    getHealthSummary() {
+      if (!this.healthStatus) return null;
+      
+      return {
+        status: this.healthStatus.status,
+        uptime: Math.floor(this.healthStatus.uptime_seconds / 3600) + ' hours',
+        avgResponseTime: this.healthStatus.performance_metrics?.average_response_time + 'ms',
+        accuracy: this.healthStatus.detection_accuracy?.current_accuracy + '%',
+        memoryUsage: this.healthStatus.system_health?.memory_usage + '%',
+        modelsLoaded: this.healthStatus.models_loaded
+      };
+    }
+  }
+
+  // Export for use
+  module.exports = AIDetectionHealthMonitor;
+
+  // Example usage
+  const monitor = new AIDetectionHealthMonitor('http://localhost:8003', 30000);
+  monitor.startMonitoring();
+
+  // Get health summary
+  setInterval(() => {
+    const summary = monitor.getHealthSummary();
+    if (summary) {
+      console.log('📊 Health Summary:', summary);
+    }
+  }, 300000); // Every 5 minutes
+  ```
+
+  ```python Python
+  import requests
+  import time
+  import threading
+  import logging
+  from datetime import datetime
+  import json
+
+  class AIDetectionHealthMonitor:
+      def __init__(self, base_url='http://localhost:8003', check_interval=60):
+          self.base_url = base_url
+          self.check_interval = check_interval
+          self.health_status = None
+          self.monitoring = False
+          self.alert_thresholds = {
+              'response_time': 1000,  # ms
+              'accuracy': 95.0,  # %
+              'false_positive_rate': 5.0,  # %
+              'memory_usage': 85.0,  # %
+              'cpu_usage': 80.0,  # %
+              'gpu_usage': 95.0  # %
+          }
+          
+          logging.basicConfig(level=logging.INFO)
+          self.logger = logging.getLogger(__name__)
+          
+      def check_health(self):
+          """Check the health of the AI detection service"""
+          try:
+              response = requests.get(
+                  f'{self.base_url}/health',
+                  timeout=10
+              )
+              response.raise_for_status()
+              
+              self.health_status = response.json()
+              issues = self.process_health_data(self.health_status)
+              return self.health_status, issues
+              
+          except requests.exceptions.RequestException as e:
+              self.logger.error(f"AI Detection health check failed: {e}")
+              self.handle_health_check_failure(e)
+              raise
+              
+      def process_health_data(self, health):
+          """Process health data and identify issues"""
+          issues = []
+          
+          # Check response time
+          if (health.get('performance_metrics', {}).get('average_response_time', 0) > 
+              self.alert_thresholds['response_time']):
+              issues.append({
+                  'type': 'performance',
+                  'message': f"High response time: {health['performance_metrics']['average_response_time']}ms",
+                  'severity': 'warning',
+                  'metric': 'response_time',
+                  'value': health['performance_metrics']['average_response_time']
+              })
+              
+          # Check accuracy
+          if (health.get('detection_accuracy', {}).get('current_accuracy', 100) < 
+              self.alert_thresholds['accuracy']):
+              issues.append({
+                  'type': 'accuracy',
+                  'message': f"Low accuracy: {health['detection_accuracy']['current_accuracy']}%",
+                  'severity': 'critical',
+                  'metric': 'accuracy',
+                  'value': health['detection_accuracy']['current_accuracy']
+              })
+              
+          # Check false positive rate
+          if (health.get('detection_accuracy', {}).get('false_positive_rate', 0) > 
+              self.alert_thresholds['false_positive_rate']):
+              issues.append({
+                  'type': 'accuracy',
+                  'message': f"High false positive rate: {health['detection_accuracy']['false_positive_rate']}%",
+                  'severity': 'warning',
+                  'metric': 'false_positive_rate',
+                  'value': health['detection_accuracy']['false_positive_rate']
+              })
+              
+          # Check memory usage
+          if (health.get('system_health', {}).get('memory_usage', 0) > 
+              self.alert_thresholds['memory_usage']):
+              issues.append({
+                  'type': 'resource',
+                  'message': f"High memory usage: {health['system_health']['memory_usage']}%",
+                  'severity': 'warning',
+                  'metric': 'memory_usage',
+                  'value': health['system_health']['memory_usage']
+              })
+              
+          # Check models loaded
+          if not health.get('models_loaded', False):
+              issues.append({
+                  'type': 'model',
+                  'message': 'AI detection models not loaded',
+                  'severity': 'critical',
+                  'metric': 'models_loaded',
+                  'value': False
+              })
+              
+          if issues:
+              self.handle_health_issues(issues)
+              
+          return issues
+          
+      def handle_health_issues(self, issues):
+          """Handle identified health issues"""
+          for issue in issues:
+              if issue['severity'] == 'critical':
+                  self.send_critical_alert(issue)
+              else:
+                  self.send_warning_alert(issue)
+                  
+      def send_critical_alert(self, issue):
+          """Send critical alert"""
+          self.logger.error(f"🚨 CRITICAL AI DETECTION ISSUE: {issue}")
+          # Implement critical alerting (email, webhook, etc.)
+          
+      def send_warning_alert(self, issue):
+          """Send warning alert"""
+          self.logger.warning(f"⚠️ AI Detection Warning: {issue}")
+          
+      def start_monitoring(self):
+          """Start health monitoring in background thread"""
+          if self.monitoring:
+              return
+              
+          self.monitoring = True
+          self.logger.info("🔍 Starting AI Detection health monitoring...")
+          
+          def monitor():
+              while self.monitoring:
+                  try:
+                      self.check_health()
+                  except Exception as e:
+                      self.logger.error(f"Health monitoring error: {e}")
+                  time.sleep(self.check_interval)
+                  
+          thread = threading.Thread(target=monitor, daemon=True)
+          thread.start()
+          
+      def stop_monitoring(self):
+          """Stop health monitoring"""
+          self.monitoring = False
+          self.logger.info("🛑 Stopped AI Detection health monitoring")
+          
+      def get_health_summary(self):
+          """Get a summary of current health status"""
+          if not self.health_status:
+              return None
+              
+          return {
+              'status': self.health_status.get('status'),
+              'uptime_hours': self.health_status.get('uptime_seconds', 0) // 3600,
+              'avg_response_time_ms': self.health_status.get('performance_metrics', {}).get('average_response_time'),
+              'accuracy_percent': self.health_status.get('detection_accuracy', {}).get('current_accuracy'),
+              'memory_usage_percent': self.health_status.get('system_health', {}).get('memory_usage'),
+              'models_loaded': self.health_status.get('models_loaded'),
+              'last_check': datetime.now().isoformat()
+          }
+
+  # Example usage
+  if __name__ == "__main__":
+      # Initialize monitor
+      monitor = AIDetectionHealthMonitor('http://localhost:8003', 30)
+      
+      # Start monitoring
+      monitor.start_monitoring()
+      
+      # Print health summary every 5 minutes
+      try:
+          while True:
+              time.sleep(300)  # 5 minutes
+              summary = monitor.get_health_summary()
+              if summary:
+                  print("📊 Health Summary:", json.dumps(summary, indent=2))
+      except KeyboardInterrupt:
+          monitor.stop_monitoring()
+          print("Health monitoring stopped")
+  ```
+</CodeGroup>
+
+### Advanced Monitoring
+
+Implement comprehensive monitoring with trend analysis and alerting:
+
+```javascript
+class AdvancedAIDetectionMonitor {
+  constructor(config) {
+    this.config = config;
+    this.metrics = new Map();
+    this.trends = new Map();
+    this.alerts = [];
+    this.dashboardData = {};
+  }
+
+  async collectMetrics() {
+    const health = await this.checkHealth();
+    const timestamp = Date.now();
+
+    // Store metrics with timestamp
+    this.storeMetric('response_time', health.performance_metrics?.average_response_time, timestamp);
+    this.storeMetric('accuracy', health.detection_accuracy?.current_accuracy, timestamp);
+    this.storeMetric('false_positive_rate', health.detection_accuracy?.false_positive_rate, timestamp);
+    this.storeMetric('memory_usage', health.system_health?.memory_usage, timestamp);
+    this.storeMetric('cpu_usage', health.system_health?.cpu_usage, timestamp);
+    this.storeMetric('gpu_usage', health.system_health?.gpu_utilization, timestamp);
+    this.storeMetric('queue_length', health.performance_metrics?.queue_length, timestamp);
+    this.storeMetric('requests_per_minute', health.performance_metrics?.requests_per_minute, timestamp);
+
+    return this.analyzeMetrics();
+  }
+
+  storeMetric(name, value, timestamp) {
+    if (value === undefined || value === null) return;
+    
+    if (!this.metrics.has(name)) {
+      this.metrics.set(name, []);
+    }
+    
+    const metricArray = this.metrics.get(name);
+    metricArray.push({ value, timestamp });
+    
+    // Keep only last 24 hours of data
+    const cutoff = timestamp - (24 * 60 * 60 * 1000);
+    const filtered = metricArray.filter(point => point.timestamp > cutoff);
+    this.metrics.set(name, filtered);
+  }
+
+  analyzeMetrics() {
+    const analysis = {};
+    
+    for (const [metricName, data] of this.metrics) {
+      const recentData = data.slice(-20); // Last 20 readings
+      
+      if (recentData.length < 2) continue;
+      
+      const values = recentData.map(d => d.value);
+      const average = values.reduce((sum, val) => sum + val, 0) / values.length;
+      const trend = this.calculateTrend(recentData);
+      const anomaly = this.detectAnomaly(values);
+      
+      analysis[metricName] = {
+        current: values[values.length - 1],
+        average: average,
+        trend: trend,
+        anomaly: anomaly,
+        threshold_status: this.checkThreshold(metricName, average)
+      };
+    }
+    
+    this.updateDashboard(analysis);
+    return analysis;
+  }
+
+  calculateTrend(data) {
+    if (data.length < 5) return 'insufficient_data';
+    
+    const values = data.map(d => d.value);
+    const mid = Math.floor(values.length / 2);
+    const firstHalf = values.slice(0, mid);
+    const secondHalf = values.slice(mid);
+    
+    const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+    
+    const change = ((secondAvg - firstAvg) / firstAvg) * 100;
+    
+    if (Math.abs(change) < 2) return 'stable';
+    return change > 0 ? 'increasing' : 'decreasing';
+  }
+
+  detectAnomaly(values) {
+    if (values.length < 10) return false;
+    
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    const stdDev = Math.sqrt(variance);
+    
+    const latest = values[values.length - 1];
+    const zScore = Math.abs((latest - mean) / stdDev);
+    
+    return zScore > 2; // Anomaly if more than 2 standard deviations
+  }
+
+  updateDashboard(analysis) {
+    this.dashboardData = {
+      timestamp: new Date().toISOString(),
+      overview: {
+        status: this.getOverallStatus(analysis),
+        total_metrics: Object.keys(analysis).length,
+        anomalies: Object.values(analysis).filter(m => m.anomaly).length,
+        warnings: Object.values(analysis).filter(m => m.threshold_status === 'warning').length
+      },
+      metrics: analysis
+    };
+  }
+
+  getOverallStatus(analysis) {
+    const criticalIssues = Object.values(analysis).filter(m => 
+      m.threshold_status === 'critical' || m.anomaly
+    );
+    
+    if (criticalIssues.length > 0) return 'critical';
+    
+    const warnings = Object.values(analysis).filter(m => 
+      m.threshold_status === 'warning'
+    );
+    
+    if (warnings.length > 0) return 'warning';
+    
+    return 'healthy';
+  }
+}
+```
+
+## Alerting System
+
+Set up comprehensive alerting for AI detection issues:
+
+### Alert Types
+
+<AccordionGroup>
+  <Accordion title="Performance Alerts">
+    **High Latency**: Response time >1 second for image analysis
+    
+    **Processing Delays**: Queue length exceeds normal capacity
+    
+    **Throughput Drop**: Requests per minute drops below baseline
+    
+    **Memory Pressure**: Available memory drops below 500MB
+  </Accordion>
+
+  <Accordion title="Accuracy Alerts">
+    **Accuracy Degradation**: Detection accuracy drops below 95%
+    
+    **High False Positives**: False positive rate exceeds 5%
+    
+    **Model Confidence Drop**: Average confidence falls below 0.8
+    
+    **Model Loading Failure**: Models fail to load on startup
+  </Accordion>
+
+  <Accordion title="System Alerts">
+    **Service Unavailable**: Health check endpoint returns error
+    
+    **Resource Exhaustion**: CPU, memory, or GPU usage exceeds 90%
+    
+    **Disk Space Low**: Available disk space below 20%
+    
+    **Model File Corruption**: Model files become corrupted or missing
+  </Accordion>
+
+  <Accordion title="Security Alerts">
+    **Unusual Usage**: Suspicious request patterns or volumes
+    
+    **Large File Attacks**: Multiple oversized file uploads
+    
+    **Rate Limit Abuse**: Excessive requests from single source
+    
+    **Malformed Requests**: High rate of invalid requests
+  </Accordion>
+</AccordionGroup>
+
+### Alert Configuration
+
+```javascript
+const aiDetectionAlertConfig = {
+  channels: {
+    email: ['ai-admin@yourcompany.com', 'devops@yourcompany.com'],
+    slack: '#ai-detection-alerts',
+    webhook: 'https://your-app.com/ai-alerts',
+    pagerduty: 'your-pagerduty-key',
+    sms: ['+1234567890'] // For critical alerts only
+  },
+  thresholds: {
+    response_time: {
+      warning: 800,
+      critical: 1500
+    },
+    accuracy: {
+      warning: 96.0,
+      critical: 94.0
+    },
+    false_positive_rate: {
+      warning: 4.0,
+      critical: 7.0
+    },
+    memory_usage: {
+      warning: 80.0,
+      critical: 90.0
+    },
+    cpu_usage: {
+      warning: 75.0,
+      critical: 90.0
+    },
+    gpu_usage: {
+      warning: 85.0,
+      critical: 95.0
+    }
+  },
+  escalation: {
+    warning: ['email', 'slack'],
+    critical: ['email', 'slack', 'webhook', 'pagerduty'],
+    recovery: ['email', 'slack']
+  },
+  notification_intervals: {
+    warning: 300000, // 5 minutes
+    critical: 60000   // 1 minute
+  },
+  maintenance_mode: false // Disable alerts during maintenance
+};
+```
+
+## Troubleshooting Guide
+
+### Common Issues and Solutions
+
+<AccordionGroup>
+  <Accordion title="High Response Times">
+    **Symptoms**: Health check shows elevated response times
+    
+    **Causes**:
+    - Large image file processing
+    - System resource constraints
+    - Memory pressure
+    - GPU resource contention
+    
+    **Solutions**:
+    - Implement image preprocessing and resizing
+    - Scale processing resources
+    - Optimize memory usage
+    - Add image size limits
+    - Use image compression
+  </Accordion>
+
+  <Accordion title="Accuracy Degradation">
+    **Symptoms**: Detection accuracy below expected thresholds
+    
+    **Causes**:
+    - New AI generation techniques
+    - Image quality changes
+    - Model drift over time
+    - Incorrect threshold settings
+    
+    **Solutions**:
+    - Update detection models
+    - Retrain with new data
+    - Calibrate confidence thresholds
+    - Implement model versioning
+  </Accordion>
+
+  <Accordion title="Memory Issues">
+    **Symptoms**: High memory usage or out-of-memory errors
+    
+    **Causes**:
+    - Large batch processing
+    - Memory leaks
+    - Concurrent processing overload
+    - Large model files
+    
+    **Solutions**:
+    - Implement batch size limits
+    - Add memory monitoring
+    - Optimize model loading
+    - Use memory-efficient processing
+    - Restart service periodically
+  </Accordion>
+
+  <Accordion title="False Positive Spikes">
+    **Symptoms**: Unusually high false positive rates
+    
+    **Causes**:
+    - Poor image quality
+    - New image formats
+    - Threshold misconfiguration
+    - Model sensitivity issues
+    
+    **Solutions**:
+    - Adjust confidence thresholds
+    - Implement quality checks
+    - Update preprocessing pipeline
+    - Fine-tune model sensitivity
+  </Accordion>
+</AccordionGroup>
+
+## Performance Optimization
+
+### Optimization Strategies
+
+<CardGroup cols={2}>
+  <Card
+    title="Image Processing"
+    icon="image"
+  >
+    Optimize image preprocessing for better speed and accuracy
+  </Card>
+  <Card
+    title="Caching Strategy"
+    icon="database"
+  >
+    Cache analysis results for frequently processed images
+  </Card>
+  <Card
+    title="Load Balancing"
+    icon="scale-balanced"
+  >
+    Distribute processing load across multiple detection instances
+  </Card>
+  <Card
+    title="Resource Management"
+    icon="server"
+  >
+    Optimize GPU and memory usage for maximum throughput
+  </Card>
+</CardGroup>
+
+### Monitoring Best Practices
+
+- **Baseline Establishment**: Establish performance baselines for your specific use case
+- **Trend Analysis**: Monitor long-term trends to identify gradual degradation
+- **Proactive Alerts**: Set up predictive alerts before issues become critical
+- **Regular Calibration**: Perform regular accuracy calibration with known samples
+- **Automated Recovery**: Implement automated responses to common issues
+
+## Health Check Integration
+
+### Docker Health Checks
+
+```dockerfile
+# Add to your Dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8003/health || exit 1
+```
+
+### Kubernetes Health Checks
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: ai-detection
+    image: ai-detection:latest
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 8003
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 8003
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 2
+```
+
+### Load Balancer Health Checks
+
+```nginx
+upstream ai_detection {
+    server 127.0.0.1:8003 max_fails=3 fail_timeout=30s;
+    server 127.0.0.1:8004 max_fails=3 fail_timeout=30s;
+}
+
+location /health {
+    access_log off;
+    return 200 "healthy\n";
+    add_header Content-Type text/plain;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Production Deployment"
+    icon="rocket"
+    href="/detection/production-deployment"
+  >
+    Deploy the AI detection service for production use
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/endpoint/get"
+  >
+    Complete health check API documentation
+  </Card>
+</CardGroup> 
