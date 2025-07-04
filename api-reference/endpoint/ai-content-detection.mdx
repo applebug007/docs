@@ -230,7 +230,6 @@ For simple use cases, you can send a minimal request with just the required fiel
 
 ## Code Examples
 
-<CodeGroup>
 ```bash cURL
 # Full request with all parameters
 curl -X POST "http://localhost:8003/detect" \
@@ -262,6 +261,9 @@ curl -X POST "http://localhost:8003/detect" \
   }'
 ```
 
+<AccordionGroup>
+  <Accordion title="More Language Examples">
+    <CodeGroup>
 ```python Python
 import base64
 import requests
@@ -564,7 +566,9 @@ try {
 }
 ?>
 ```
-</CodeGroup>
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
 
 ## Base64 Encoding Tips
 
@@ -609,3 +613,9 @@ The provided Postman collection includes tests for this endpoint:
 4. **Task ID Preservation**: Verify task_id is returned correctly
 
 The collection includes automated tests that verify response structure and task ID handling.
+
+---
+
+<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
+  author by Fuliang Trevor Xu and Zebang Jasper Hu
+</div>

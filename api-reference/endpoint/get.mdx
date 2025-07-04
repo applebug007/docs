@@ -57,11 +57,13 @@ Monitor the status and health of the AI Detection service.
 
 #### Code Examples
 
-<CodeGroup>
 ```bash cURL
 curl -X GET "http://localhost:8003/health"
 ```
 
+<AccordionGroup>
+  <Accordion title="More Language Examples">
+    <CodeGroup>
 ```python Python
 import requests
 
@@ -139,7 +141,9 @@ checkServiceHealth().then(({ healthData, isHealthy }) => {
     }
 });
 ```
-</CodeGroup>
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
 
 ---
 
@@ -192,11 +196,13 @@ Get general information about the AI Detection API and available endpoints.
 
 #### Code Examples
 
-<CodeGroup>
 ```bash cURL
 curl -X GET "http://localhost:8003/"
 ```
 
+<AccordionGroup>
+  <Accordion title="More Language Examples">
+    <CodeGroup>
 ```python Python
 import requests
 
@@ -263,7 +269,9 @@ getAPIInfo().then(apiInfo => {
     }
 });
 ```
-</CodeGroup>
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
 
 ---
 
@@ -337,11 +345,13 @@ Get information about available AI detection models.
 
 #### Code Examples
 
-<CodeGroup>
 ```bash cURL
 curl -X GET "http://localhost:8003/models"
 ```
 
+<AccordionGroup>
+  <Accordion title="More Language Examples">
+    <CodeGroup>
 ```python Python
 import requests
 
@@ -464,7 +474,9 @@ checkModelAvailability('patchcraft').then(isAvailable => {
     }
 });
 ```
-</CodeGroup>
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
 
 ## Best Practices
 
@@ -569,3 +581,9 @@ monitor.startMonitoring();
 <Warning>
 **Service Dependencies**: Always check that `models_loaded` is `true` before making detection requests. Requests made before models are loaded will fail.
 </Warning>
+
+---
+
+<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
+  author by Fuliang Trevor Xu and Zebang Jasper Hu
+</div>

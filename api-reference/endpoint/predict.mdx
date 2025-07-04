@@ -154,7 +154,6 @@ The `/predict` endpoint allows you to upload image files directly for AI detecti
 
 ## Code Examples
 
-<CodeGroup>
 ```bash cURL
 # Basic detection with default threshold
 curl -X POST "http://localhost:8003/predict" \
@@ -166,6 +165,9 @@ curl -X POST "http://localhost:8003/predict" \
   -F "threshold=0.8"
 ```
 
+<AccordionGroup>
+  <Accordion title="More Language Examples">
+    <CodeGroup>
 ```python Python
 import requests
 
@@ -285,7 +287,9 @@ try {
 }
 ?>
 ```
-</CodeGroup>
+    </CodeGroup>
+  </Accordion>
+</AccordionGroup>
 
 ## Threshold Selection Guide
 
@@ -330,3 +334,9 @@ Import the provided Postman collection to test this endpoint:
 4. **Error Test**: Try uploading without file
 
 The collection includes automated tests to verify response format and performance.
+
+---
+
+<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
+  author by Fuliang Trevor Xu and Zebang Jasper Hu
+</div>
