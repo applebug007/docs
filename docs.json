@@ -11,6 +11,8 @@
     "dark": "#000000"
   },
   "favicon": "/logo/favicon.png",
+
+
   "navigation": {
     "tabs": [
       {
@@ -50,42 +52,6 @@
               "voice-clone/detect",
               "voice-clone/health-check"
             ]
-          },
-          {
-            "group": "Deepfake APIs",
-            "pages": [
-              "api-reference/faceswap/detect",
-              "api-reference/faceswap/upload-detect",
-              "api-reference/faceswap/health"
-            ]
-          },
-          {
-            "group": "Voice & Audio APIs",
-            "pages": [
-              "api-reference/voice/detect",
-              "api-reference/voice/upload-detect",
-              "api-reference/defence/analyze-audio",
-              "api-reference/voice/health"
-            ]
-          },
-          {
-            "group": "Content Detection APIs",
-            "pages": [
-              "api-reference/ai-content/upload-detect",
-              "api-reference/ai-content/health",
-              "api-reference/document/detect",
-              "api-reference/document/health"
-            ]
-          },
-          {
-            "group": "Security & Defence",
-            "pages": [
-              "api-reference/defence/detect-deepfake",
-              "api-reference/defence/check-authenticity",
-              "api-reference/ai-agent/process",
-              "api-reference/fraud/detect",
-              "api-reference/defence/health"
-            ]
           }
         ]
       },
@@ -119,6 +85,7 @@
                       "api-reference/endpoint/faceswap-health"
                     ]
                   },
+                  "api-reference/endpoint/url-detection",
                   "api-reference/endpoint/voice-clone-detection",
                   "api-reference/endpoint/document-fraud-detection",
                   "api-reference/endpoint/ai-agent"

@@ -29,7 +29,7 @@ The `/predict` endpoint allows you to upload image files directly for AI detecti
 
 ## Response Format
 
-### Success Response (200)
+<ResponseExample>
 
 ```json
 {
@@ -48,6 +48,8 @@ The `/predict` endpoint allows you to upload image files directly for AI detecti
   }
 }
 ```
+
+</ResponseExample>
 
 <ResponseField name="likely_ai_generated" type="boolean">
   Whether the image is likely AI-generated based on the threshold
@@ -93,68 +95,10 @@ The `/predict` endpoint allows you to upload image files directly for AI detecti
   </Expandable>
 </ResponseField>
 
-### Error Responses
 
-<AccordionGroup>
-  <Accordion title="400 - No File Provided">
-    ```json
-    {
-      "detail": "No file provided",
-      "status": 400
-    }
-    ```
-    **Cause**: Request sent without image file  
-    **Solution**: Include image file in form data
-  </Accordion>
-  
-  <Accordion title="400 - Invalid Threshold">
-    ```json
-    {
-      "detail": "Threshold must be between 0.0 and 1.0",
-      "status": 400
-    }
-    ```
-    **Cause**: Threshold value outside valid range  
-    **Solution**: Use threshold between 0.0 and 1.0
-  </Accordion>
-  
-  <Accordion title="413 - File Too Large">
-    ```json
-    {
-      "detail": "File size exceeds maximum limit",
-      "status": 413
-    }
-    ```
-    **Cause**: Image file larger than 10MB  
-    **Solution**: Compress or resize image before upload
-  </Accordion>
-  
-  <Accordion title="415 - Unsupported Media Type">
-    ```json
-    {
-      "detail": "Unsupported image format",
-      "status": 415
-    }
-    ```
-    **Cause**: Unsupported image format  
-    **Solution**: Use JPEG, PNG, BMP, GIF, or WEBP format
-  </Accordion>
-  
-  <Accordion title="500 - Processing Error">
-    ```json
-    {
-      "detail": "Image processing failed",
-      "status": 500
-    }
-    ```
-    **Cause**: Error during image analysis  
-    **Solution**: Check image integrity, try different image
-  </Accordion>
-</AccordionGroup>
 
-## Code Examples
+<RequestExample>
 
-<CodeGroup>
 ```bash cURL
 # Basic detection with default threshold
 curl -X POST "http://localhost:8003/predict" \
@@ -166,126 +110,20 @@ curl -X POST "http://localhost:8003/predict" \
   -F "threshold=0.8"
 ```
 
-```python Python
-import requests
+</RequestExample>
 
-def detect_ai_image(image_path, threshold=0.5):
-    """
-    Detect AI generation in image file
-    
-    Args:
-        image_path (str): Path to image file
-        threshold (float): Detection threshold (0.0-1.0)
-        
-    Returns:
-        dict: Detection results
-    """
-    url = "http://localhost:8003/predict"
-    
-    with open(image_path, 'rb') as file:
-        files = {'file': file}
-        data = {'threshold': threshold}
-        
-        response = requests.post(url, files=files, data=data)
-        response.raise_for_status()
-        
-        return response.json()
+## Code Examples
 
-# Example usage
-try:
-    result = detect_ai_image("test_image.jpg", threshold=0.7)
-    print(f"AI Generated: {result['likely_ai_generated']}")
-    print(f"Confidence: {result['confidence_score']:.2f}")
-    print(f"Processing Time: {result['processing_time_ms']}ms")
-except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
+```bash
+# Basic detection with default threshold
+curl -X POST "http://localhost:8003/predict" \
+  -F "file=@sample_image.jpg"
+
+# Detection with custom threshold
+curl -X POST "http://localhost:8003/predict" \
+  -F "file=@sample_image.jpg" \
+  -F "threshold=0.8"
 ```
-
-```javascript JavaScript
-async function detectAIImage(file, threshold = 0.5) {
-    /**
-     * Detect AI generation in image file
-     * 
-     * @param {File} file - Image file object
-     * @param {number} threshold - Detection threshold (0.0-1.0)
-     * @returns {Object} Detection results
-     */
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('threshold', threshold.toString());
-    
-    try {
-        const response = await fetch('http://localhost:8003/predict', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`${response.status}: ${error.detail}`);
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('Detection failed:', error);
-        throw error;
-    }
-}
-
-// Example with file input
-document.getElementById('fileInput').addEventListener('change', async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        try {
-            const result = await detectAIImage(file, 0.6);
-            console.log('Detection Result:', result);
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
-    }
-});
-```
-
-```php PHP
-<?php
-function detectAIImage($imagePath, $threshold = 0.5) {
-    $url = 'http://localhost:8003/predict';
-    
-    $postData = array(
-        'file' => new CURLFile($imagePath),
-        'threshold' => $threshold
-    );
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    if ($httpCode !== 200) {
-        throw new Exception("API request failed with code: $httpCode");
-    }
-    
-    return json_decode($response, true);
-}
-
-// Example usage
-try {
-    $result = detectAIImage('test_image.jpg', 0.5);
-    echo "AI Generated: " . ($result['likely_ai_generated'] ? 'Yes' : 'No') . "\n";
-    echo "Confidence: " . round($result['confidence_score'], 2) . "\n";
-    echo "Processing Time: " . $result['processing_time_ms'] . "ms\n";
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-}
-?>
-```
-</CodeGroup>
 
 ## Threshold Selection Guide
 

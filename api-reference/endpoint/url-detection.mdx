@@ -1,20 +1,20 @@
 ---
-title: "Faceswap Detection"
-openapi: "POST /faceswap/detect"
+title: "URL Detection"
+openapi: "POST /faceswap/detect-url"
 ---
 
 <RequestExample>
 
 ```bash cURL
-curl -X POST "https://www.scam.ai/api/process/faceswap/detect" \
+curl -X POST "https://www.scam.ai/api/process/faceswap/detect-url" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "data": {
-      "type": "base64",
-      "payload": "{{sampleImageBase64}}"
+      "type": "url",
+      "payload": "https://example.com/image.jpg"
     },
-    "task_id": "detect-faceswap-1749686204",
+    "task_id": "detect-url-1749686204",
     "usecase_environment": {
       "detection_threshold": 0.8,
       "analysis_mode": "comprehensive"
@@ -22,4 +22,4 @@ curl -X POST "https://www.scam.ai/api/process/faceswap/detect" \
   }'
 ```
 
-</RequestExample>
+</RequestExample> 
