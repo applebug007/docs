@@ -101,10 +101,21 @@
               {
                 "group": "Defence APIs",
                 "pages": [
-                  "api-reference/endpoint/predict",
-                  "api-reference/endpoint/ai-content-detection",
-                  "api-reference/endpoint/get",
-                  "api-reference/endpoint/faceswap-detection",
+                  {
+                    "group": "AI Detection",
+                    "pages": [
+                      "api-reference/endpoint/predict",
+                      "api-reference/endpoint/ai-content-detection",
+                      "api-reference/endpoint/get"
+                    ]
+                  },
+                  {
+                    "group": "Faceswap Detection",
+                    "pages": [
+                      "api-reference/endpoint/faceswap-detection",
+                      "api-reference/endpoint/faceswap-health"
+                    ]
+                  },
                   "api-reference/endpoint/voice-clone-detection",
                   "api-reference/endpoint/document-fraud-detection",
                   "api-reference/endpoint/ai-agent"
