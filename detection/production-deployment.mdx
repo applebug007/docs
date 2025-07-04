@@ -1,0 +1,1075 @@
+---
+title: 'Production Deployment Guide'
+description: 'Deploy the AI Image Detection service for production environments with scalability and reliability'
+---
+
+## Overview
+
+This guide covers deploying the AI Image Detection service in production environments with high availability, scalability, and monitoring. The service runs on port 8003 and provides endpoints for image analysis via file upload and base64 data.
+
+## Prerequisites
+
+Before deploying to production, ensure you have:
+
+- **Docker** and **Docker Compose** installed
+- **Kubernetes cluster** (optional, for orchestrated deployment)
+- **Load balancer** (Nginx, HAProxy, or cloud provider)
+- **Monitoring tools** (Prometheus, Grafana, DataDog)
+- **SSL certificates** for HTTPS endpoints
+- **Backup storage** for model files and logs
+
+## Deployment Options
+
+<CardGroup cols={3}>
+  <Card
+    title="Docker Compose"
+    icon="docker"
+  >
+    Simple multi-container deployment for small to medium workloads
+  </Card>
+  <Card
+    title="Kubernetes"
+    icon="dharmachakra"
+  >
+    Orchestrated deployment with auto-scaling and self-healing
+  </Card>
+  <Card
+    title="Cloud Services"
+    icon="cloud"
+  >
+    Managed services like AWS ECS, Azure Container Instances, GCP Cloud Run
+  </Card>
+</CardGroup>
+
+## Docker Compose Deployment
+
+### Production Docker Compose Configuration
+
+Create a `docker-compose.prod.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  ai-detection:
+    image: ai-detection:latest
+    container_name: ai-detection-prod
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - MODEL_PATH=/app/models
+      - LOG_LEVEL=info
+      - MAX_FILE_SIZE=10485760  # 10MB
+      - REDIS_URL=redis://redis:6379
+      - MONITORING_ENABLED=true
+    volumes:
+      - ./models:/app/models:ro
+      - ./logs:/app/logs
+      - /tmp:/tmp
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - ai-detection-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ai-detection-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ai-detection-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: ai-detection-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - ai-detection
+    networks:
+      - ai-detection-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-detection-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    networks:
+      - ai-detection-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-detection-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=your-secure-password
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - ai-detection-network
+
+volumes:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  ai-detection-network:
+    driver: bridge
+```
+
+### Nginx Configuration
+
+Create `nginx.conf` for load balancing and SSL termination:
+
+```nginx
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream ai_detection {
+        least_conn;
+        server ai-detection:8003 max_fails=3 fail_timeout=30s;
+        # Add more instances for load balancing
+        # server ai-detection-2:8003 max_fails=3 fail_timeout=30s;
+        # server ai-detection-3:8003 max_fails=3 fail_timeout=30s;
+    }
+
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=upload_limit:10m rate=2r/s;
+
+    # File upload limits
+    client_max_body_size 10M;
+    client_body_timeout 60s;
+    client_header_timeout 60s;
+
+    server {
+        listen 80;
+        server_name your-domain.com;
+        return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        server_name your-domain.com;
+
+        # SSL Configuration
+        ssl_certificate /etc/nginx/ssl/cert.pem;
+        ssl_certificate_key /etc/nginx/ssl/key.pem;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
+        ssl_prefer_server_ciphers off;
+
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+
+        # Health check endpoint (no rate limiting)
+        location /health {
+            proxy_pass http://ai_detection;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            access_log off;
+        }
+
+        # File upload endpoints
+        location ~ ^/(predict)$ {
+            limit_req zone=upload_limit burst=5 nodelay;
+            
+            proxy_pass http://ai_detection;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # Upload timeouts
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 120s;
+        }
+
+        # Base64 detection endpoint
+        location ~ ^/(detect)$ {
+            limit_req zone=api_limit burst=10 nodelay;
+            
+            proxy_pass http://ai_detection;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 60s;
+        }
+
+        # Info endpoints
+        location ~ ^/(|models)$ {
+            limit_req zone=api_limit burst=20 nodelay;
+            
+            proxy_pass http://ai_detection;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Block all other requests
+        location / {
+            return 404;
+        }
+    }
+}
+```
+
+### Deployment Commands
+
+```bash
+# Create necessary directories
+mkdir -p models logs ssl grafana/dashboards grafana/datasources
+
+# Deploy the stack
+docker-compose -f docker-compose.prod.yml up -d
+
+# Check service status
+docker-compose -f docker-compose.prod.yml ps
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f ai-detection
+
+# Scale the service (if needed)
+docker-compose -f docker-compose.prod.yml up -d --scale ai-detection=3
+```
+
+## Kubernetes Deployment
+
+### Kubernetes Manifests
+
+Create production-ready Kubernetes resources:
+
+```yaml
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-detection
+  labels:
+    name: ai-detection
+---
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-detection-config
+  namespace: ai-detection
+data:
+  ENV: "production"
+  DEBUG: "false"
+  LOG_LEVEL: "info"
+  MAX_FILE_SIZE: "10485760"
+  MONITORING_ENABLED: "true"
+---
+# secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ai-detection-secrets
+  namespace: ai-detection
+type: Opaque
+stringData:
+  redis-url: "redis://ai-detection-redis:6379"
+  api-key: "your-production-api-key"
+---
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-detection
+  namespace: ai-detection
+  labels:
+    app: ai-detection
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: ai-detection
+  template:
+    metadata:
+      labels:
+        app: ai-detection
+    spec:
+      containers:
+      - name: ai-detection
+        image: ai-detection:latest
+        ports:
+        - containerPort: 8003
+          name: http
+        env:
+        - name: ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ai-detection-config
+              key: ENV
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: ai-detection-config
+              key: DEBUG
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: ai-detection-secrets
+              key: redis-url
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 2
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+          readOnly: true
+        - name: temp-storage
+          mountPath: /tmp
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: ai-detection-models-pvc
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 1Gi
+---
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-detection-service
+  namespace: ai-detection
+  labels:
+    app: ai-detection
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8003
+    targetPort: 8003
+    protocol: TCP
+    name: http
+  selector:
+    app: ai-detection
+---
+# hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ai-detection-hpa
+  namespace: ai-detection
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ai-detection
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ai-detection-ingress
+  namespace: ai-detection
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+spec:
+  tls:
+  - hosts:
+    - api.your-domain.com
+    secretName: ai-detection-tls
+  rules:
+  - host: api.your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-detection-service
+            port:
+              number: 8003
+```
+
+### Deploy to Kubernetes
+
+```bash
+# Apply all manifests
+kubectl apply -f namespace.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl apply -f hpa.yaml
+kubectl apply -f ingress.yaml
+
+# Check deployment status
+kubectl get pods -n ai-detection
+kubectl get services -n ai-detection
+kubectl get ingress -n ai-detection
+
+# View logs
+kubectl logs -n ai-detection -l app=ai-detection -f
+
+# Scale manually if needed
+kubectl scale deployment ai-detection --replicas=5 -n ai-detection
+```
+
+## Cloud Provider Deployment
+
+### AWS ECS with Fargate
+
+```json
+{
+  "family": "ai-detection-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "2048",
+  "memory": "4096",
+  "executionRoleArn": "arn:aws:iam::account:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::account:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "ai-detection",
+      "image": "your-account.dkr.ecr.region.amazonaws.com/ai-detection:latest",
+      "portMappings": [
+        {
+          "containerPort": 8003,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENV",
+          "value": "production"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "info"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:ssm:region:account:parameter/ai-detection/redis-url"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8003/health || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ai-detection",
+          "awslogs-region": "us-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Google Cloud Run
+
+```yaml
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ai-detection
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/memory: "4Gi"
+        run.googleapis.com/cpu: "2"
+    spec:
+      containerConcurrency: 10
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/your-project/ai-detection:latest
+        ports:
+        - containerPort: 8003
+        env:
+        - name: ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 60
+          periodSeconds: 30
+```
+
+## Monitoring and Observability
+
+### Prometheus Configuration
+
+Create `prometheus.yml`:
+
+```yaml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "ai_detection_rules.yml"
+
+scrape_configs:
+  - job_name: 'ai-detection'
+    static_configs:
+      - targets: ['ai-detection:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+```
+
+### Grafana Dashboard
+
+Create monitoring dashboards for:
+
+- **Response Time Trends**: Track API response times over time
+- **Accuracy Metrics**: Monitor detection accuracy and false positive rates
+- **Resource Usage**: CPU, memory, GPU utilization
+- **Error Rates**: Track HTTP error rates and failed requests
+- **Throughput**: Requests per second and concurrent processing
+
+### Application Logs
+
+Configure structured logging in your application:
+
+```python
+import logging
+import json
+from datetime import datetime
+
+class ProductionLogger:
+    def __init__(self, service_name="ai-detection"):
+        self.service_name = service_name
+        self.logger = logging.getLogger(service_name)
+        
+        # Configure JSON formatter for production
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.INFO)
+    
+    def log_request(self, endpoint, method, status_code, response_time, user_id=None):
+        log_data = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": self.service_name,
+            "event": "api_request",
+            "endpoint": endpoint,
+            "method": method,
+            "status_code": status_code,
+            "response_time_ms": response_time,
+            "user_id": user_id
+        }
+        self.logger.info(json.dumps(log_data))
+    
+    def log_detection(self, file_size, confidence, is_ai_generated, processing_time):
+        log_data = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": self.service_name,
+            "event": "detection_completed",
+            "file_size_bytes": file_size,
+            "confidence": confidence,
+            "is_ai_generated": is_ai_generated,
+            "processing_time_ms": processing_time
+        }
+        self.logger.info(json.dumps(log_data))
+```
+
+## Security Best Practices
+
+### Application Security
+
+<CardGroup cols={2}>
+  <Card
+    title="Input Validation"
+    icon="shield-check"
+  >
+    Validate all file uploads, implement size limits, and scan for malware
+  </Card>
+  <Card
+    title="Rate Limiting"
+    icon="gauge"
+  >
+    Implement API rate limiting to prevent abuse and DDoS attacks
+  </Card>
+  <Card
+    title="Authentication"
+    icon="key"
+  >
+    Use API keys, JWT tokens, or OAuth for API access control
+  </Card>
+  <Card
+    title="Data Privacy"
+    icon="user-shield"
+  >
+    Implement data retention policies and secure image processing
+  </Card>
+</CardGroup>
+
+### Infrastructure Security
+
+```bash
+# Firewall rules (example with ufw)
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
+sudo ufw allow from 10.0.0.0/8 to any port 8003  # Internal API access
+sudo ufw enable
+
+# Docker security scanning
+docker scan ai-detection:latest
+
+# Kubernetes network policies (example)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-detection-netpol
+  namespace: ai-detection
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-detection
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8003
+```
+
+## Performance Optimization
+
+### Resource Allocation
+
+**Minimum Requirements:**
+- **CPU**: 2 cores per instance
+- **Memory**: 4GB RAM per instance
+- **Storage**: 10GB for models + logs
+- **Network**: 1Gbps for file uploads
+
+**Recommended for Production:**
+- **CPU**: 4-8 cores per instance
+- **Memory**: 8-16GB RAM per instance
+- **GPU**: Optional NVIDIA GPU for faster inference
+- **Storage**: SSD storage for better I/O performance
+
+### Load Testing
+
+Use the following script to load test your deployment:
+
+```python
+import asyncio
+import aiohttp
+import time
+import base64
+from pathlib import Path
+
+async def load_test_api(base_url, concurrent_requests=10, duration_seconds=60):
+    """Load test the AI detection API"""
+    
+    # Sample image for testing
+    test_image = Path("test_image.jpg")
+    if not test_image.exists():
+        print("Please provide a test_image.jpg file")
+        return
+    
+    async def make_request(session):
+        """Make a single API request"""
+        try:
+            # Test file upload endpoint
+            with open(test_image, 'rb') as f:
+                form_data = aiohttp.FormData()
+                form_data.add_field('file', f, filename='test.jpg')
+                form_data.add_field('threshold', '0.5')
+                
+                start_time = time.time()
+                async with session.post(f"{base_url}/predict", data=form_data) as response:
+                    result = await response.json()
+                    response_time = (time.time() - start_time) * 1000
+                    
+                    return {
+                        'status': response.status,
+                        'response_time': response_time,
+                        'success': response.status == 200
+                    }
+        except Exception as e:
+            return {
+                'status': 0,
+                'response_time': 0,
+                'success': False,
+                'error': str(e)
+            }
+    
+    # Run load test
+    start_time = time.time()
+    results = []
+    
+    async with aiohttp.ClientSession() as session:
+        while time.time() - start_time < duration_seconds:
+            tasks = [make_request(session) for _ in range(concurrent_requests)]
+            batch_results = await asyncio.gather(*tasks)
+            results.extend(batch_results)
+            
+            await asyncio.sleep(1)  # 1 second between batches
+    
+    # Analyze results
+    successful_requests = [r for r in results if r['success']]
+    total_requests = len(results)
+    success_rate = len(successful_requests) / total_requests * 100
+    
+    if successful_requests:
+        avg_response_time = sum(r['response_time'] for r in successful_requests) / len(successful_requests)
+        max_response_time = max(r['response_time'] for r in successful_requests)
+        min_response_time = min(r['response_time'] for r in successful_requests)
+    else:
+        avg_response_time = max_response_time = min_response_time = 0
+    
+    print(f"""
+Load Test Results:
+==================
+Total Requests: {total_requests}
+Successful Requests: {len(successful_requests)}
+Success Rate: {success_rate:.2f}%
+Average Response Time: {avg_response_time:.2f}ms
+Min Response Time: {min_response_time:.2f}ms
+Max Response Time: {max_response_time:.2f}ms
+Requests per Second: {total_requests / duration_seconds:.2f}
+    """)
+
+# Run the load test
+if __name__ == "__main__":
+    asyncio.run(load_test_api("http://localhost:8003", concurrent_requests=5, duration_seconds=30))
+```
+
+## Backup and Recovery
+
+### Model File Backup
+
+```bash
+#!/bin/bash
+# backup_models.sh
+
+BACKUP_DIR="/backup/ai-detection/models"
+MODEL_DIR="/app/models"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR/$DATE"
+
+# Backup model files
+rsync -av "$MODEL_DIR/" "$BACKUP_DIR/$DATE/"
+
+# Create compressed archive
+tar -czf "$BACKUP_DIR/models_backup_$DATE.tar.gz" -C "$BACKUP_DIR" "$DATE"
+
+# Clean up temporary directory
+rm -rf "$BACKUP_DIR/$DATE"
+
+# Keep only last 7 days of backups
+find "$BACKUP_DIR" -name "models_backup_*.tar.gz" -mtime +7 -delete
+
+echo "Model backup completed: models_backup_$DATE.tar.gz"
+```
+
+### Database Backup (Redis)
+
+```bash
+#!/bin/bash
+# backup_redis.sh
+
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+BACKUP_DIR="/backup/ai-detection/redis"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p "$BACKUP_DIR"
+
+# Create Redis backup
+redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" BGSAVE
+sleep 5  # Wait for background save to complete
+
+# Copy dump file
+cp /var/lib/redis/dump.rdb "$BACKUP_DIR/redis_dump_$DATE.rdb"
+
+# Compress backup
+gzip "$BACKUP_DIR/redis_dump_$DATE.rdb"
+
+# Keep only last 7 days
+find "$BACKUP_DIR" -name "redis_dump_*.rdb.gz" -mtime +7 -delete
+
+echo "Redis backup completed: redis_dump_$DATE.rdb.gz"
+```
+
+## Disaster Recovery
+
+### Service Recovery Procedure
+
+1. **Identify the Issue**
+   - Check health endpoints
+   - Review logs and metrics
+   - Verify infrastructure status
+
+2. **Quick Recovery Steps**
+   ```bash
+   # Restart services
+   docker-compose -f docker-compose.prod.yml restart ai-detection
+   
+   # Or in Kubernetes
+   kubectl rollout restart deployment/ai-detection -n ai-detection
+   
+   # Scale up if needed
+   kubectl scale deployment ai-detection --replicas=5 -n ai-detection
+   ```
+
+3. **Full Recovery Process**
+   ```bash
+   # Stop services
+   docker-compose -f docker-compose.prod.yml down
+   
+   # Restore models from backup
+   tar -xzf /backup/models_backup_latest.tar.gz -C /app/
+   
+   # Restore Redis data
+   gunzip -c /backup/redis_dump_latest.rdb.gz > /var/lib/redis/dump.rdb
+   
+   # Restart services
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+## Maintenance
+
+### Regular Maintenance Tasks
+
+<AccordionGroup>
+  <Accordion title="Model Updates">
+    - Monitor model performance metrics
+    - Update models when accuracy degrades
+    - Test new models in staging before production
+    - Maintain model version history
+  </Accordion>
+
+  <Accordion title="System Updates">
+    - Apply security patches regularly
+    - Update Docker images and dependencies
+    - Monitor and update SSL certificates
+    - Review and update backup procedures
+  </Accordion>
+
+  <Accordion title="Performance Optimization">
+    - Review and optimize resource allocation
+    - Analyze response time trends
+    - Clean up old logs and temporary files
+    - Update caching strategies
+  </Accordion>
+
+  <Accordion title="Security Audits">
+    - Review access logs for suspicious activity
+    - Update API keys and secrets
+    - Scan for security vulnerabilities
+    - Update firewall and network policies
+  </Accordion>
+</AccordionGroup>
+
+### Automated Maintenance Script
+
+```bash
+#!/bin/bash
+# maintenance.sh - Run weekly maintenance tasks
+
+LOG_FILE="/var/log/ai-detection-maintenance.log"
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "[$DATE] Starting maintenance tasks" >> "$LOG_FILE"
+
+# Clean up old logs (keep last 30 days)
+find /app/logs -name "*.log" -mtime +30 -delete
+echo "[$DATE] Cleaned up old log files" >> "$LOG_FILE"
+
+# Clean up temporary files
+find /tmp -name "*ai-detection*" -mtime +1 -delete
+echo "[$DATE] Cleaned up temporary files" >> "$LOG_FILE"
+
+# Update Docker images (if using Docker)
+docker-compose -f docker-compose.prod.yml pull
+echo "[$DATE] Updated Docker images" >> "$LOG_FILE"
+
+# Restart services with zero downtime
+docker-compose -f docker-compose.prod.yml up -d --force-recreate --no-deps ai-detection
+echo "[$DATE] Restarted AI detection service" >> "$LOG_FILE"
+
+# Run health check
+sleep 30
+HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8003/health)
+if [ "$HEALTH_STATUS" = "200" ]; then
+    echo "[$DATE] Health check passed" >> "$LOG_FILE"
+else
+    echo "[$DATE] Health check failed with status: $HEALTH_STATUS" >> "$LOG_FILE"
+    # Send alert
+    curl -X POST -H 'Content-type: application/json' \
+         --data '{"text":"🚨 AI Detection service health check failed after maintenance"}' \
+         "$SLACK_WEBHOOK_URL"
+fi
+
+echo "[$DATE] Maintenance tasks completed" >> "$LOG_FILE"
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Health Monitoring"
+    icon="heart-pulse"
+    href="/detection/health-monitoring"
+  >
+    Set up comprehensive health monitoring and alerting
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/endpoint/predict"
+  >
+    Complete API documentation and testing guides
+  </Card>
+</CardGroup> 

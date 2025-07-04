@@ -1,0 +1,329 @@
+---
+title: "Faceswap Detection Health Check"
+api: "GET /faceswap/health"
+description: "Check the health and status of the Faceswap Detection service"
+---
+
+## Health Check Endpoint
+
+Monitor the health and operational status of the Faceswap Detection service.
+
+### Response
+
+<ResponseField name="status" type="string">
+  Service health status - "healthy", "degraded", or "unhealthy"
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp of the health check
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  Current version of the faceswap detection service
+</ResponseField>
+
+<ResponseField name="uptime_seconds" type="number">
+  Service uptime in seconds
+</ResponseField>
+
+<ResponseField name="models_loaded" type="boolean">
+  Whether the faceswap detection models are loaded and ready
+</ResponseField>
+
+<ResponseField name="performance_metrics" type="object">
+  Performance metrics for the service
+  <Expandable title="performance_metrics">
+    <ResponseField name="average_response_time" type="number">
+      Average response time in milliseconds
+    </ResponseField>
+    <ResponseField name="requests_per_minute" type="number">
+      Current request rate per minute
+    </ResponseField>
+    <ResponseField name="success_rate" type="number">
+      Success rate percentage
+    </ResponseField>
+    <ResponseField name="queue_length" type="number">
+      Current processing queue length
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="system_health" type="object">
+  System resource utilization
+  <Expandable title="system_health">
+    <ResponseField name="cpu_usage" type="number">
+      CPU usage percentage
+    </ResponseField>
+    <ResponseField name="memory_usage" type="number">
+      Memory usage percentage
+    </ResponseField>
+    <ResponseField name="gpu_utilization" type="number">
+      GPU utilization percentage
+    </ResponseField>
+    <ResponseField name="disk_usage" type="number">
+      Disk usage percentage
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="detection_accuracy" type="object">
+  Detection accuracy metrics
+  <Expandable title="detection_accuracy">
+    <ResponseField name="current_accuracy" type="number">
+      Current detection accuracy percentage
+    </ResponseField>
+    <ResponseField name="false_positive_rate" type="number">
+      False positive rate percentage
+    </ResponseField>
+    <ResponseField name="false_negative_rate" type="number">
+      False negative rate percentage
+    </ResponseField>
+    <ResponseField name="model_confidence_avg" type="number">
+      Average model confidence score
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="model_status" type="object">
+  Model information and status
+  <Expandable title="model_status">
+    <ResponseField name="primary_model" type="string">
+      Name of the primary detection model
+    </ResponseField>
+    <ResponseField name="model_version" type="string">
+      Version of the detection model
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Model status - "active", "loading", or "error"
+    </ResponseField>
+    <ResponseField name="last_update" type="string">
+      ISO 8601 timestamp of last model update
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.scam.ai/faceswap/health" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.scam.ai/faceswap/health', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const healthStatus = await response.json();
+console.log('Faceswap service health:', healthStatus);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.scam.ai/faceswap/health',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY'
+    }
+)
+
+health_status = response.json()
+print('Faceswap service health:', health_status)
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Healthy Service
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "2.1.4",
+  "uptime_seconds": 86400,
+  "models_loaded": true,
+  "performance_metrics": {
+    "average_response_time": 380,
+    "requests_per_minute": 45,
+    "success_rate": 99.7,
+    "queue_length": 1
+  },
+  "system_health": {
+    "cpu_usage": 68.2,
+    "memory_usage": 74.5,
+    "gpu_utilization": 85.3,
+    "disk_usage": 45.8
+  },
+  "detection_accuracy": {
+    "current_accuracy": 97.3,
+    "false_positive_rate": 1.8,
+    "false_negative_rate": 0.9,
+    "model_confidence_avg": 0.89
+  },
+  "model_status": {
+    "primary_model": "faceswap_detector_v2",
+    "model_version": "2.1.4",
+    "status": "active",
+    "last_update": "2024-01-15T06:00:00Z"
+  }
+}
+```
+
+```json Degraded Service
+{
+  "status": "degraded",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "2.1.4",
+  "uptime_seconds": 86400,
+  "models_loaded": true,
+  "performance_metrics": {
+    "average_response_time": 1250,
+    "requests_per_minute": 45,
+    "success_rate": 95.2,
+    "queue_length": 8
+  },
+  "system_health": {
+    "cpu_usage": 92.1,
+    "memory_usage": 88.7,
+    "gpu_utilization": 96.8,
+    "disk_usage": 45.8
+  },
+  "detection_accuracy": {
+    "current_accuracy": 94.1,
+    "false_positive_rate": 4.2,
+    "false_negative_rate": 1.7,
+    "model_confidence_avg": 0.82
+  },
+  "model_status": {
+    "primary_model": "faceswap_detector_v2",
+    "model_version": "2.1.4",
+    "status": "active",
+    "last_update": "2024-01-15T06:00:00Z"
+  }
+}
+```
+
+```json Service Error
+{
+  "status": "unhealthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "2.1.4",
+  "uptime_seconds": 86400,
+  "models_loaded": false,
+  "performance_metrics": {
+    "average_response_time": 0,
+    "requests_per_minute": 0,
+    "success_rate": 0,
+    "queue_length": 0
+  },
+  "system_health": {
+    "cpu_usage": 15.2,
+    "memory_usage": 32.1,
+    "gpu_utilization": 0,
+    "disk_usage": 45.8
+  },
+  "detection_accuracy": {
+    "current_accuracy": 0,
+    "false_positive_rate": 0,
+    "false_negative_rate": 0,
+    "model_confidence_avg": 0
+  },
+  "model_status": {
+    "primary_model": "faceswap_detector_v2",
+    "model_version": "2.1.4",
+    "status": "error",
+    "last_update": "2024-01-15T06:00:00Z"
+  }
+}
+```
+
+</ResponseExample>
+
+## Status Codes
+
+<ResponseField name="200" type="OK">
+  Health check completed successfully
+</ResponseField>
+
+<ResponseField name="503" type="Service Unavailable">
+  Service is currently unavailable or experiencing issues
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Internal server error occurred during health check
+</ResponseField>
+
+## Health Status Interpretation
+
+### Status Values
+
+- **healthy**: Service is operating normally
+- **degraded**: Service is operational but experiencing performance issues
+- **unhealthy**: Service is not functioning properly
+
+### Key Metrics to Monitor
+
+- **Response Time**: Should be under 500ms for optimal performance
+- **Success Rate**: Should be above 99% for production environments
+- **Model Status**: Must be "active" for detection to function
+- **Resource Usage**: Monitor for approaching limits (>90%)
+
+## Use Cases
+
+- **Load Balancer Health Checks**: Configure load balancers to check this endpoint
+- **Monitoring Systems**: Set up alerts based on health status and metrics
+- **Automated Recovery**: Trigger service restarts when status is "unhealthy"
+- **Performance Monitoring**: Track response times and success rates over time
+
+## Integration Examples
+
+### Kubernetes Liveness Probe
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /faceswap/health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+```
+
+### Docker Health Check
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/faceswap/health || exit 1
+```
+
+### Monitoring Script
+
+```python
+import requests
+import time
+
+def monitor_faceswap_health():
+    while True:
+        try:
+            response = requests.get('https://api.scam.ai/faceswap/health')
+            health = response.json()
+            
+            if health['status'] != 'healthy':
+                print(f"⚠️ Faceswap service status: {health['status']}")
+                # Send alert to monitoring system
+                
+            if health['performance_metrics']['average_response_time'] > 1000:
+                print(f"⚠️ High response time: {health['performance_metrics']['average_response_time']}ms")
+                
+        except Exception as e:
+            print(f"❌ Health check failed: {e}")
+            
+        time.sleep(60)  # Check every minute
+
+monitor_faceswap_health()
+``` 
