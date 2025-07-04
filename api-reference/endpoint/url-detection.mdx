@@ -1,25 +1,300 @@
 ---
 title: "URL Detection"
-openapi: "POST /faceswap/detect-url"
+description: "Detect malicious and phishing URLs to protect your users from harmful websites"
 ---
+
+## What is URL Detection?
+
+URL Detection is a security service that analyzes websites to determine if they are malicious, phishing sites, or contain harmful content. This API helps protect your users by scanning URLs before they visit them.
+
+**Common Use Cases:**
+- **Email Security**: Scan links in emails before users click them
+- **Social Media**: Check URLs shared in posts and messages  
+- **Browser Extensions**: Real-time protection while browsing
+- **Chat Applications**: Validate links shared in conversations
+- **Form Validation**: Check URLs submitted by users
 
 <RequestExample>
 
-```bash cURL
-curl -X POST "https://www.scam.ai/api/process/faceswap/detect-url" \
-  -H "Authorization: Bearer <token>" \
+```bash Basic Detection
+curl -X POST "https://your-api-endpoint.com/detect-url" \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -d '{
-    "data": {
-      "type": "url",
-      "payload": "https://example.com/image.jpg"
-    },
-    "task_id": "detect-url-1749686204",
-    "usecase_environment": {
-      "detection_threshold": 0.8,
-      "analysis_mode": "comprehensive"
-    }
+    "url": "https://suspicious-website.com"
   }'
 ```
 
-</RequestExample> 
+</RequestExample>
+
+## Authentication
+
+All requests require an API key in the header:
+```
+X-API-Key: YOUR_API_KEY
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card
+    title="Email Security"
+    icon="shield-check"
+  >
+    Scan links in emails before users click them to prevent phishing attacks
+  </Card>
+  <Card
+    title="Social Media Protection"
+    icon="users"
+  >
+    Check URLs shared in posts and messages to protect your community
+  </Card>
+  <Card
+    title="Browser Safety"
+    icon="globe"
+  >
+    Real-time protection while browsing with browser extensions
+  </Card>
+  <Card
+    title="Form Validation"
+    icon="check-circle"
+  >
+    Validate URLs submitted by users in forms and inputs
+  </Card>
+</CardGroup>
+
+## Quick Start for Beginners
+
+### Step 1: Test with a Safe URL
+```bash
+curl -X POST "https://your-api-endpoint.com/detect-url" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{"url": "https://www.google.com"}'
+```
+
+### Step 2: Test with a Known Malicious URL
+```bash
+curl -X POST "https://your-api-endpoint.com/detect-url" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{"url": "https://testsafebrowsing.appspot.com/s/malware.html"}'
+```
+
+### Step 3: Handle the Response
+```json
+{
+  "url": "https://testsafebrowsing.appspot.com/s/malware.html",
+  "final_verdict": "malicious",
+  "confidence": 0.87
+}
+```
+
+<RequestExample>
+
+```bash Basic Detection
+curl -X POST "https://your-api-endpoint.com/detect-url" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{
+    "url": "https://suspicious-website.com"
+  }'
+```
+
+```bash Multiple URL Testing
+# Test a legitimate website
+curl -X POST "https://your-api-endpoint.com/detect-url" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{"url": "https://www.github.com"}'
+
+# Test a phishing site
+curl -X POST "https://your-api-endpoint.com/detect-url" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{"url": "https://loginaccountverifice392.square.site/"}'
+```
+
+```bash Health Check
+# Check if the service is running
+curl -X GET "https://your-api-endpoint.com/health" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+</RequestExample>
+
+## Response Examples
+
+### Safe Website (Benign)
+```json
+{
+  "url": "https://www.google.com",
+  "final_verdict": "benign",
+  "confidence": 0.23
+}
+```
+
+### Malicious Website
+```json
+{
+  "url": "https://testsafebrowsing.appspot.com/s/malware.html",
+  "final_verdict": "malicious", 
+  "confidence": 0.87
+}
+```
+
+### Phishing Website
+```json
+{
+  "url": "https://loginaccountverifice392.square.site/",
+  "final_verdict": "malicious",
+  "confidence": 0.84
+}
+```
+
+## Understanding the Response
+
+| Field | Description | Values |
+|-------|-------------|---------|
+| `url` | The analyzed URL | Original URL submitted |
+| `final_verdict` | Detection result | `"benign"` or `"malicious"` |
+| `confidence` | Confidence score | 0.0 to 1.0 (higher = more confident) |
+
+### Confidence Score Guide
+- **0.0 - 0.3**: Low confidence (uncertain)
+- **0.3 - 0.7**: Medium confidence  
+- **0.7 - 1.0**: High confidence (very certain)
+
+## Error Handling
+
+### Invalid URL Format (422)
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "url"],
+      "msg": "invalid or missing URL scheme",
+      "type": "value_error.url.scheme"
+    }
+  ]
+}
+```
+
+### Server Error (500)
+```json
+{
+  "detail": "Error processing URL: Model failed to load"
+}
+```
+
+## Integration Examples
+
+### JavaScript/Node.js
+```javascript
+async function checkURL(url) {
+  try {
+    const response = await fetch('https://your-api-endpoint.com/detect-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': 'YOUR_API_KEY'
+      },
+      body: JSON.stringify({ url: url })
+    });
+    
+    const result = await response.json();
+    
+    if (result.final_verdict === 'malicious') {
+      console.log(`⚠️ WARNING: ${url} is malicious (confidence: ${result.confidence})`);
+    } else {
+      console.log(`✅ Safe: ${url} appears benign (confidence: ${result.confidence})`);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error checking URL:', error);
+  }
+}
+
+// Usage
+checkURL('https://suspicious-website.com');
+```
+
+### Python
+```python
+import requests
+
+def check_url(url, api_key):
+    try:
+        response = requests.post(
+            'https://your-api-endpoint.com/detect-url',
+            headers={
+                'Content-Type': 'application/json',
+                'X-API-Key': api_key
+            },
+            json={'url': url}
+        )
+        
+        result = response.json()
+        
+        if result['final_verdict'] == 'malicious':
+            print(f"⚠️ WARNING: {url} is malicious (confidence: {result['confidence']})")
+        else:
+            print(f"✅ Safe: {url} appears benign (confidence: {result['confidence']})")
+            
+        return result
+        
+    except Exception as e:
+        print(f"Error checking URL: {e}")
+
+# Usage
+check_url('https://suspicious-website.com', 'YOUR_API_KEY')
+```
+
+## Best Practices
+
+### 1. Always Validate Input
+```bash
+# ✅ Good - Full URL with protocol
+{"url": "https://example.com"}
+
+# ❌ Bad - Missing protocol  
+{"url": "example.com"}
+```
+
+### 2. Handle Confidence Scores
+- **High confidence (0.7+)**: Act on the verdict
+- **Medium confidence (0.3-0.7)**: Consider additional verification
+- **Low confidence (0.0-0.3)**: Manual review recommended
+
+### 3. Implement Rate Limiting
+- Add delays between requests
+- Cache results for recently checked URLs
+- Use batch processing for multiple URLs
+
+### 4. Error Handling
+```bash
+# Always check response status
+if [ $? -eq 0 ]; then
+  echo "✅ Request successful"
+else
+  echo "❌ Request failed - check your API key and URL format"
+fi
+```
+
+## Common Issues & Solutions
+
+| Issue | Solution |
+|-------|----------|
+| 422 Error | Ensure URL has `http://` or `https://` prefix |
+| 500 Error | Service temporarily unavailable, retry later |
+| No response | Check API key and network connectivity |
+| Low confidence | URL is borderline, consider manual review |
+
+## Rate Limits & Pricing
+
+- **Free Tier**: 100 requests/day
+- **Pro Tier**: 10,000 requests/day  
+- **Enterprise**: Custom limits
+
+Contact support for higher limits or enterprise features. 

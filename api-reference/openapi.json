@@ -261,10 +261,15 @@
         }
       }
     },
-    "/faceswap/detect-url": {
+    "/detect-url": {
       "post": {
         "summary": "URL Detection",
-        "description": "Detect manipulations in images from URL",
+        "description": "Detect malicious, phishing, or suspicious URLs using ML models and Google Web Risk API",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -272,54 +277,47 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "data": {
-                    "type": "object",
-                    "required": ["type", "payload"],
-                    "properties": {
-                      "type": {
-                        "type": "string",
-                        "example": "url"
-                      },
-                      "payload": {
-                        "type": "string",
-                        "format": "uri",
-                        "description": "URL of the image to analyze"
-                      }
-                    }
-                  },
-                  "task_id": {
+                  "url": {
                     "type": "string",
-                    "description": "Unique identifier for the detection task"
-                  },
-                  "usecase_environment": {
-                    "type": "object",
-                    "properties": {
-                      "detection_threshold": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "default": 0.8
-                      },
-                      "analysis_mode": {
-                        "type": "string",
-                        "enum": ["fast", "comprehensive"],
-                        "default": "comprehensive"
-                      }
-                    }
+                    "format": "uri",
+                    "description": "The URL to analyze for maliciousness",
+                    "example": "https://suspicious-website.com"
                   }
                 },
-                "required": ["data"]
+                "required": ["url"]
               }
             }
           }
         },
         "responses": {
           "default": {
-            "description": "URL detection result",
+            "description": "URL analysis result",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DetectionResponse"
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "The analyzed URL"
+                    },
+                    "final_verdict": {
+                      "type": "string",
+                      "enum": ["benign", "malicious"],
+                      "description": "Final detection verdict"
+                    },
+                    "confidence": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "description": "Confidence score (0.0 to 1.0)"
+                    }
+                  },
+                  "example": {
+                    "url": "https://suspicious-website.com",
+                    "final_verdict": "malicious",
+                    "confidence": 0.87
+                  }
                 }
               }
             }
@@ -1334,6 +1332,11 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
       }
     }
   }

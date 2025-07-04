@@ -33,7 +33,7 @@ description: 'Detect deepfakes and face manipulation in images with our advanced
 
 ## Deployment Information
 
-**API Endpoint**: `http://3.80.33.105:5000`  
+**API Endpoint**: `https://your-api-endpoint.com`  
 **Status**: Production Ready  
 **Authentication**: API Key Required  
 **Supported Formats**: JPEG, PNG  
@@ -114,7 +114,7 @@ Our model outputs a **blended fakeness score** ranging from 0.0 to 1.0:
 Check if the Deepfake Detection service is running and models are loaded:
 
 ```bash
-GET http://3.80.33.105:5000/health
+GET https://your-api-endpoint.com/health
 ```
 
 **Response:**
@@ -130,7 +130,7 @@ GET http://3.80.33.105:5000/health
 Analyze images for face manipulation and deepfake content:
 
 ```bash
-POST http://3.80.33.105:5000/predict
+POST https://your-api-endpoint.com/predict
 ```
 
 **Headers:**
@@ -249,10 +249,10 @@ When a face is detected and analysis is successful:
 
 ```bash cURL
 # Health Check
-curl -X GET "http://3.80.33.105:5000/health"
+curl -X GET "https://your-api-endpoint.com/health"
 
 # Deepfake Detection
-curl -X POST "http://3.80.33.105:5000/predict" \
+curl -X POST "https://your-api-endpoint.com/predict" \
   -H "x-api-key: your_api_key_here" \
   -F "file=@/path/to/your/image.jpg"
 ```
@@ -261,7 +261,7 @@ curl -X POST "http://3.80.33.105:5000/predict" \
 import requests
 
 # API Configuration
-BASE_URL = "http://3.80.33.105:5000"
+BASE_URL = "https://your-api-endpoint.com"
 API_KEY = "your_api_key_here"
 
 def health_check():
@@ -319,7 +319,7 @@ if __name__ == "__main__":
 ```
 
 ```javascript JavaScript
-const BASE_URL = 'http://3.80.33.105:5000';
+const BASE_URL = 'https://your-api-endpoint.com';
 const API_KEY = 'your_api_key_here';
 
 // Health Check
