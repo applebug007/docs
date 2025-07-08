@@ -2,6 +2,7 @@
 title: 'AI Detection Overview'
 description: 'Comprehensive AI-powered detection capabilities to identify and prevent various types of digital fraud and manipulation'
 ---
+
 ## Detection Categories
 
 <CardGroup cols={3}>
@@ -32,16 +33,16 @@ description: 'Comprehensive AI-powered detection capabilities to identify and pr
 
 Our AI detection system uses multiple layers of analysis to identify potential threats:
 
-### 1. **Pattern Recognition**
+### 1. Pattern Recognition
 Advanced machine learning models trained on millions of samples to recognize subtle patterns that indicate artificial generation or manipulation.
 
-### 2. **Behavioral Analysis**
+### 2. Behavioral Analysis
 Analysis of communication patterns, timing, and context to identify suspicious behavior typical of scam attempts.
 
-### 3. **Technical Fingerprinting**
+### 3. Technical Fingerprinting
 Detection of technical artifacts left behind by AI generation tools, compression algorithms, and manipulation software.
 
-### 4. **Cross-Reference Validation**
+### 4. Cross-Reference Validation
 Real-time checking against known threat databases and blacklists to identify previously reported scam sources.
 
 ## Detection Accuracy
@@ -96,7 +97,7 @@ All detection capabilities are available through our real-time API, providing:
   <Card
     title="Real-time Monitoring"
     icon="satellite-dish"
-    href="/api-reference/ai-agent/process"
+    href="/api-reference/endpoint/ai-agent"
   >
     Live analysis capabilities for ongoing protection
   </Card>
@@ -105,29 +106,39 @@ All detection capabilities are available through our real-time API, providing:
 ## Use Cases by Industry
 
 ### Financial Services
-- Customer verification and KYC compliance
-- Fraud prevention in digital banking
-- Voice authentication security
+- **Customer verification and KYC compliance**: Verify customer identity documents and prevent fraud during onboarding
+- **Fraud prevention in digital banking**: Detect manipulated financial documents and prevent account takeover
+- **Voice authentication security**: Ensure voice biometric authentication isn't compromised by cloned voices
+- **Transaction verification**: Validate authenticity of transaction requests and prevent social engineering attacks
+- **Regulatory compliance**: Meet anti-fraud requirements with comprehensive detection capabilities
 
 ### Healthcare
-- Medical document verification
-- Telemedicine security
-- Patient identity confirmation
+- **Medical document verification**: Ensure authenticity of medical records, prescriptions, and test results
+- **Telemedicine security**: Verify patient identity and prevent fraud in virtual consultations
+- **Patient identity confirmation**: Prevent medical identity theft and ensure accurate patient records
+- **Insurance claim validation**: Detect fraudulent medical documentation in insurance claims
+- **Clinical trial integrity**: Ensure authenticity of research data and patient consent forms
 
 ### Education
-- Academic integrity monitoring
-- Online exam security
-- Student verification
+- **Academic integrity monitoring**: Detect AI-generated assignments, essays, and research papers
+- **Online exam security**: Prevent cheating through deepfake impersonation during remote testing
+- **Student verification**: Confirm student identity for online courses and certifications
+- **Credential authentication**: Validate educational certificates and transcripts
+- **Research paper authenticity**: Ensure integrity of academic publications and prevent plagiarism
 
 ### Media & Entertainment
-- Content authenticity verification
-- Copyright protection
-- Deepfake detection in news
+- **Content authenticity verification**: Detect deepfakes and manipulated content in news and media
+- **Copyright protection**: Identify unauthorized use of copyrighted material and deepfake violations
+- **Deepfake detection in news**: Maintain journalistic integrity by identifying manipulated content
+- **Social media monitoring**: Track and flag AI-generated content across platforms
+- **Celebrity protection**: Prevent unauthorized deepfake content of public figures
 
 ### E-commerce
-- Seller verification
-- Product authenticity
-- Customer support security
+- **Seller verification**: Validate merchant identities and prevent fraudulent seller accounts
+- **Product authenticity**: Detect AI-generated product images and fake listings
+- **Customer support security**: Prevent voice cloning attacks in customer service interactions
+- **Review authenticity**: Identify AI-generated fake reviews and ratings
+- **Payment fraud prevention**: Detect manipulated financial documents in payment processing
 
 ## Getting Started
 
@@ -136,17 +147,30 @@ Ready to implement AI detection in your application? Start with our quickstart g
 <Card
   title="Quickstart Guide"
   icon="rocket"
-  href="/quickstart"
+  href="/introduction"
 >
   Get up and running with Scam AI detection in under 5 minutes
 </Card>
 
-<Card title="Production Deployment" icon="rocket" href="/detection/production-deployment">
-  Deploy AI detection services for production use
-</Card>
+<CardGroup cols={2}>
+  <Card
+    title="Introduction"
+    icon="book"
+    href="/introduction"
+  >
+    Learn about our detection capabilities and get started
+  </Card>
+  <Card
+    title="AI Image Detection API"
+    icon="image"
+    href="/detection/ai-image-detection"
+  >
+    Complete guide to AI image detection endpoints
+  </Card>
+</CardGroup>
 
 ---
 
-<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
+<div style={{textAlign: 'center', marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb', color: '#6b7280', fontSize: '0.875rem'}}>
   author by Fuliang Trevor Xu and Zebang Jasper Hu
 </div> 
