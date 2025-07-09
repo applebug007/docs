@@ -1,0 +1,149 @@
+---
+title: "URL Detection"
+openapi: "POST /url-detection"
+---
+
+## Overview
+
+The `/url-detection` endpoint allows you to submit a URL for threat analysis. The service checks the URL for phishing, malware, or scam risks and returns a verdict and confidence score.
+
+## Request Parameters
+
+### JSON Body Parameters
+
+<ParamField body="url" type="string" required>
+  The URL to analyze for threats.
+  
+  **Example**: "https://suspicious-website.com"
+</ParamField>
+
+<ParamField body="threshold" type="number" default="0.5">
+  Detection sensitivity threshold (0.0 to 1.0).
+  
+  - **0.2**: High sensitivity, more false positives
+  - **0.5**: Balanced detection (recommended)
+  - **0.8**: High precision, fewer false positives
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "url": "https://suspicious-website.com",
+  "final_verdict": "malicious",
+  "confidence_score": 0.87,
+  "processing_time_ms": 120
+}
+```
+
+<ResponseField name="url" type="string">
+  The URL that was analyzed.
+</ResponseField>
+<ResponseField name="final_verdict" type="string">
+  Detection result: `benign` or `malicious`.
+</ResponseField>
+<ResponseField name="confidence_score" type="number">
+  Detection confidence score (0.0 to 1.0).
+</ResponseField>
+<ResponseField name="processing_time_ms" type="number">
+  Time taken to process the URL in milliseconds.
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No URL Provided">
+    ```json
+    {
+      "detail": "No URL provided",
+      "status": 400
+    }
+    ```
+    **Cause**: Request sent without a URL  
+    **Solution**: Include a valid URL in the JSON body
+  </Accordion>
+  <Accordion title="400 - Invalid Threshold">
+    ```json
+    {
+      "detail": "Threshold must be between 0.0 and 1.0",
+      "status": 400
+    }
+    ```
+    **Cause**: Threshold value outside valid range  
+    **Solution**: Use threshold between 0.0 and 1.0
+  </Accordion>
+  <Accordion title="422 - Invalid URL Format">
+    ```json
+    {
+      "detail": "Invalid URL format",
+      "status": 422
+    }
+    ```
+    **Cause**: URL is not properly formatted  
+    **Solution**: Provide a valid URL (including scheme, e.g., https://)
+  </Accordion>
+  <Accordion title="500 - Processing Error">
+    ```json
+    {
+      "detail": "URL processing failed",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during URL analysis  
+    **Solution**: Check URL, try again later
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8003/url-detection" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://suspicious-website.com", "threshold": 0.5}'
+```
+
+```python Python
+import requests
+
+def detect_url(url, threshold=0.5):
+    api_url = "http://localhost:8003/url-detection"
+    payload = {"url": url, "threshold": threshold}
+    response = requests.post(api_url, json=payload)
+    response.raise_for_status()
+    return response.json()
+
+# Example usage
+try:
+    result = detect_url("https://suspicious-website.com", threshold=0.7)
+    print(f"URL: {result['url']}")
+    print(f"Verdict: {result['final_verdict']}")
+    print(f"Confidence: {result['confidence_score']:.2f}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Threshold Selection Guide
+
+<CardGroup cols={3}>
+  <Card title="Email Security (0.3-0.4)" icon="envelope">
+    Catch most threats, allow some false positives
+  </Card>
+  <Card title="General Purpose (0.5)" icon="balance-scale">
+    Balanced accuracy for most URL use cases
+  </Card>
+  <Card title="Banking/Payments (0.7-0.8)" icon="credit-card">
+    High precision for financial URLs
+  </Card>
+</CardGroup>
+
+## Performance Tips
+
+<Tip>
+**Optimize Detection Performance**
+- Submit fully qualified URLs (with https://)
+- Avoid shortened or obfuscated links when possible
+</Tip> 
