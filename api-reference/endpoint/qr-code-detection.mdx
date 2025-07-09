@@ -1,0 +1,180 @@
+---
+title: "QR Code Detection - File Upload"
+openapi: "POST /qr-code-detection"
+---
+
+## Overview
+
+The `/qr-code-detection` endpoint allows you to upload QR code image files for threat analysis. The service decodes the QR code and checks the destination for phishing, malware, or scam risks.
+
+## Request Parameters
+
+### Form Data Parameters
+
+<ParamField body="file" type="file" required>
+  QR code image file to analyze.
+  
+  **Supported formats**: JPEG, PNG, BMP, GIF, WEBP  
+  **Maximum size**: 10MB  
+  **Recommended size**: < 5MB for optimal performance
+</ParamField>
+
+<ParamField body="threshold" type="number" default="0.5">
+  Detection sensitivity threshold (0.0 to 1.0).
+  
+  - **0.2**: High sensitivity, more false positives
+  - **0.5**: Balanced detection (recommended)
+  - **0.8**: High precision, fewer false positives
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "decoded_url": "https://malicious-site.com",
+  "final_verdict": "malicious",
+  "confidence_score": 0.92,
+  "processing_time_ms": 180
+}
+```
+
+<ResponseField name="decoded_url" type="string">
+  The URL extracted from the QR code.
+</ResponseField>
+<ResponseField name="final_verdict" type="string">
+  Detection result: `benign` or `malicious`.
+</ResponseField>
+<ResponseField name="confidence_score" type="number">
+  Detection confidence score (0.0 to 1.0).
+</ResponseField>
+<ResponseField name="processing_time_ms" type="number">
+  Time taken to process the QR code in milliseconds.
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No File Provided">
+    ```json
+    {
+      "detail": "No file provided",
+      "status": 400
+    }
+    ```
+    **Cause**: Request sent without image file  
+    **Solution**: Include QR code image file in form data
+  </Accordion>
+  <Accordion title="400 - Invalid Threshold">
+    ```json
+    {
+      "detail": "Threshold must be between 0.0 and 1.0",
+      "status": 400
+    }
+    ```
+    **Cause**: Threshold value outside valid range  
+    **Solution**: Use threshold between 0.0 and 1.0
+  </Accordion>
+  <Accordion title="413 - File Too Large">
+    ```json
+    {
+      "detail": "File size exceeds maximum limit",
+      "status": 413
+    }
+    ```
+    **Cause**: Image file larger than 10MB  
+    **Solution**: Compress or resize image before upload
+  </Accordion>
+  <Accordion title="415 - Unsupported Media Type">
+    ```json
+    {
+      "detail": "Unsupported image format",
+      "status": 415
+    }
+    ```
+    **Cause**: Unsupported image format  
+    **Solution**: Use JPEG, PNG, BMP, GIF, or WEBP format
+  </Accordion>
+  <Accordion title="422 - Invalid QR Code">
+    ```json
+    {
+      "detail": "Could not decode QR code",
+      "status": 422
+    }
+    ```
+    **Cause**: Image does not contain a valid QR code  
+    **Solution**: Upload a clear, valid QR code image
+  </Accordion>
+  <Accordion title="500 - Processing Error">
+    ```json
+    {
+      "detail": "QR code processing failed",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during QR code analysis  
+    **Solution**: Check image integrity, try different image
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8003/qr-code-detection" \
+  -F "file=@sample_qr.jpg" \
+  -F "threshold=0.5"
+```
+
+```python Python
+import requests
+
+def detect_qr_code(image_path, threshold=0.5):
+    url = "http://localhost:8003/qr-code-detection"
+    with open(image_path, 'rb') as file:
+        files = {'file': file}
+        data = {'threshold': threshold}
+        response = requests.post(url, files=files, data=data)
+        response.raise_for_status()
+        return response.json()
+
+# Example usage
+try:
+    result = detect_qr_code("test_qr.jpg", threshold=0.7)
+    print(f"Decoded URL: {result['decoded_url']}")
+    print(f"Verdict: {result['final_verdict']}")
+    print(f"Confidence: {result['confidence_score']:.2f}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Threshold Selection Guide
+
+<CardGroup cols={3}>
+  <Card title="Event Entry (0.3-0.4)" icon="ticket-alt">
+    Catch most threats, allow some false positives
+  </Card>
+  <Card title="General Purpose (0.5)" icon="balance-scale">
+    Balanced accuracy for most QR code use cases
+  </Card>
+  <Card title="Payments (0.7-0.8)" icon="credit-card">
+    High precision for financial QR codes
+  </Card>
+</CardGroup>
+
+## Performance Tips
+
+<Tip>
+**Optimize Upload Performance**
+- Use clear, high-contrast QR code images
+- Crop images to QR code area
+- Compress images to reduce file size
+</Tip>
+
+<Warning>
+**File Size Limits**
+- Maximum file size: 10MB
+- Recommended: < 5MB for best performance
+</Warning> 

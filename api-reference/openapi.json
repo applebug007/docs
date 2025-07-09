@@ -771,6 +771,134 @@
           }
         }
       }
+    },
+    "/qr-code-detection": {
+      "post": {
+        "summary": "Detect malicious or phishing QR codes",
+        "description": "Upload a QR code image for threat analysis. The service decodes the QR code and checks the destination for phishing, malware, or scam risks.",
+        "operationId": "detectQRCode",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The QR code image file to be analyzed."
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Detection sensitivity threshold (0.0 to 1.0)",
+                    "default": 0.5,
+                    "example": 0.5
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "QR code analysis result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decoded_url": { "type": "string", "description": "The URL extracted from the QR code." },
+                    "final_verdict": { "type": "string", "description": "Detection result: 'benign' or 'malicious'" },
+                    "confidence_score": { "type": "number", "description": "Detection confidence score (0.0 to 1.0)" },
+                    "processing_time_ms": { "type": "number", "description": "Time taken to process the QR code in milliseconds." }
+                  },
+                  "required": ["decoded_url", "final_verdict", "confidence_score", "processing_time_ms"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No File Provided": { "value": { "detail": "No file provided", "status": 400 } },
+                  "Invalid Threshold": { "value": { "detail": "Threshold must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large (file too large)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "File size exceeds maximum limit", "status": 413 }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type (invalid image format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Unsupported image format", "status": 415 }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity (invalid QR code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Could not decode QR code", "status": 422 }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "QR code processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
