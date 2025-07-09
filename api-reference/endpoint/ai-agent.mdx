@@ -1,10 +1,134 @@
 ---
-title: "AI Agent"
+title: "AI Agent - Text Analysis"
 openapi: "POST /ai-agent"
 ---
 
----
+## Overview
 
-<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
-  author by Fuliang Trevor Xu and Zebang Jasper Hu
-</div>
+The `/ai-agent` endpoint allows you to submit a text prompt for analysis or generation by an AI agent. The service processes the prompt and returns a generated response, a confidence score, and processing time.
+
+## Request Parameters
+
+### JSON Body Parameters
+
+<ParamField body="prompt" type="string" required>
+  The text prompt to analyze or generate a response for.
+  
+  **Example**: "Summarize the following article..."
+</ParamField>
+
+<ParamField body="temperature" type="number" default="0.7">
+  Sampling temperature for response generation (0.0 to 1.0).
+  
+  - **0.2**: More deterministic, less creative
+  - **0.7**: Balanced (recommended)
+  - **1.0**: More random, creative
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "agent_response": "This article discusses...",
+  "confidence_score": 0.93,
+  "processing_time_ms": 1500
+}
+```
+
+<ResponseField name="agent_response" type="string">
+  The AI agent's generated response to the prompt.
+</ResponseField>
+<ResponseField name="confidence_score" type="number">
+  Confidence score for the response (0.0 to 1.0).
+</ResponseField>
+<ResponseField name="processing_time_ms" type="number">
+  Time taken to process the prompt in milliseconds.
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No Prompt Provided">
+    ```json
+    {
+      "detail": "No prompt provided",
+      "status": 400
+    }
+    ```
+    **Cause**: Request sent without a prompt  
+    **Solution**: Include a valid prompt in the JSON body
+  </Accordion>
+  <Accordion title="400 - Invalid Temperature">
+    ```json
+    {
+      "detail": "Temperature must be between 0.0 and 1.0",
+      "status": 400
+    }
+    ```
+    **Cause**: Temperature value outside valid range  
+    **Solution**: Use temperature between 0.0 and 1.0
+  </Accordion>
+  <Accordion title="500 - Processing Error">
+    ```json
+    {
+      "detail": "AI agent processing failed",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during prompt analysis or generation  
+    **Solution**: Check prompt, try again later
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8003/ai-agent" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Summarize the following article...", "temperature": 0.7}'
+```
+
+```python Python
+import requests
+
+def ai_agent(prompt, temperature=0.7):
+    url = "http://localhost:8003/ai-agent"
+    payload = {"prompt": prompt, "temperature": temperature}
+    response = requests.post(url, json=payload)
+    response.raise_for_status()
+    return response.json()
+
+# Example usage
+try:
+    result = ai_agent("Summarize the following article...", temperature=0.7)
+    print(f"Agent Response: {result['agent_response']}")
+    print(f"Confidence: {result['confidence_score']:.2f}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Temperature Selection Guide
+
+<CardGroup cols={3}>
+  <Card title="Deterministic (0.2)" icon="check-circle">
+    More predictable, less creative
+  </Card>
+  <Card title="Balanced (0.7)" icon="balance-scale">
+    Good mix of creativity and reliability
+  </Card>
+  <Card title="Creative (1.0)" icon="sparkles">
+    More random, creative responses
+  </Card>
+</CardGroup>
+
+## Performance Tips
+
+<Tip>
+**Optimize Prompt Quality**
+- Be clear and specific in your prompt
+- Provide context or examples for best results
+</Tip>

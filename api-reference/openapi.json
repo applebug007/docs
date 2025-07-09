@@ -482,6 +482,68 @@
         }
       }
     },
+    "/ai-agent": {
+      "post": {
+        "summary": "AI Agent Text Analysis",
+        "description": "Submit a text prompt for analysis or generation by an AI agent. Returns a generated response, confidence score, and processing time.",
+        "operationId": "aiAgentTextAnalysis",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIAgentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI agent response result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIAgentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No Prompt Provided": { "value": { "detail": "No prompt provided", "status": 400 } },
+                  "Invalid Temperature": { "value": { "detail": "Temperature must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "AI agent processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
+    },
     "/detect": {
       "post": {
         "summary": "AI Image Detection - Base64",
@@ -1212,6 +1274,246 @@
           }
         }
       }
+    },
+    "/voice-clone-detection": {
+      "post": {
+        "summary": "Voice Clone Detection",
+        "description": "Upload an audio file for voice clone detection analysis. The service determines if the audio is a synthetic (cloned) voice and returns a verdict and confidence score.",
+        "operationId": "detectVoiceClone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The audio file to be analyzed."
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Detection sensitivity threshold (0.0 to 1.0)",
+                    "default": 0.5,
+                    "example": 0.5
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Voice clone analysis result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_voice_clone": { "type": "boolean", "description": "Whether the audio is likely a synthetic (cloned) voice based on the threshold." },
+                    "confidence_score": { "type": "number", "description": "Detection confidence score (0.0 to 1.0)" },
+                    "processing_time_ms": { "type": "number", "description": "Time taken to process the audio in milliseconds." },
+                    "model_info": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string", "description": "Model name (e.g., 'voiceguard')" },
+                        "version": { "type": "string", "description": "Model version (e.g., 'v1.2')" }
+                      },
+                      "required": ["name", "version"]
+                    }
+                  },
+                  "required": ["is_voice_clone", "confidence_score", "processing_time_ms", "model_info"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No File Provided": { "value": { "detail": "No file provided", "status": 400 } },
+                  "Invalid Threshold": { "value": { "detail": "Threshold must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large (file too large)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "File size exceeds maximum limit", "status": 413 }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type (invalid audio format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Unsupported audio format", "status": 415 }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Audio processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/document-fraud-detection": {
+      "post": {
+        "summary": "Document Fraud Detection",
+        "description": "Upload a document image file for fraud detection analysis. The service determines if the document is fraudulent (e.g., tampered, forged, or fake) and returns a verdict and confidence score.",
+        "operationId": "detectDocumentFraud",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The document image file to be analyzed."
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Detection sensitivity threshold (0.0 to 1.0)",
+                    "default": 0.5,
+                    "example": 0.5
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document fraud analysis result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_fraudulent": { "type": "boolean", "description": "Whether the document is likely fraudulent based on the threshold." },
+                    "confidence_score": { "type": "number", "description": "Detection confidence score (0.0 to 1.0)" },
+                    "processing_time_ms": { "type": "number", "description": "Time taken to process the document in milliseconds." },
+                    "model_info": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string", "description": "Model name (e.g., 'docguard')" },
+                        "version": { "type": "string", "description": "Model version (e.g., 'v2.0')" }
+                      },
+                      "required": ["name", "version"]
+                    }
+                  },
+                  "required": ["is_fraudulent", "confidence_score", "processing_time_ms", "model_info"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No File Provided": { "value": { "detail": "No file provided", "status": 400 } },
+                  "Invalid Threshold": { "value": { "detail": "Threshold must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large (file too large)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "File size exceeds maximum limit", "status": 413 }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type (invalid document format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Unsupported document format", "status": 415 }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Document processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1913,6 +2215,44 @@
             "type": "string"
           }
         }
+      },
+      "AIAgentRequest": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The text prompt to analyze or generate a response for.",
+            "example": "Summarize the following article..."
+          },
+          "temperature": {
+            "type": "number",
+            "description": "Sampling temperature for response generation (0.0 to 1.0)",
+            "default": 0.7,
+            "example": 0.7
+          }
+        },
+        "required": ["prompt"]
+      },
+      "AIAgentResponse": {
+        "type": "object",
+        "properties": {
+          "agent_response": {
+            "type": "string",
+            "description": "The AI agent's generated response to the prompt.",
+            "example": "This article discusses..."
+          },
+          "confidence_score": {
+            "type": "number",
+            "description": "Confidence score for the response (0.0 to 1.0)",
+            "example": 0.93
+          },
+          "processing_time_ms": {
+            "type": "number",
+            "description": "Time taken to process the prompt in milliseconds.",
+            "example": 1500
+          }
+        },
+        "required": ["agent_response", "confidence_score", "processing_time_ms"]
       }
     },
      "securitySchemes": {

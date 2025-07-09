@@ -1,10 +1,177 @@
 ---
-title: "Voice Clone Detection"
-openapi: "POST /voice/detect"
+title: "Voice Clone Detection - File Upload"
+openapi: "POST /voice-clone-detection"
 ---
 
----
+## Overview
 
-<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
-  author by Fuliang Trevor Xu and Zebang Jasper Hu
-</div>
+The `/voice-clone-detection` endpoint allows you to upload audio files for voice clone detection analysis. The service analyzes the audio to determine if it is a synthetic (cloned) voice and returns a verdict and confidence score.
+
+## Request Parameters
+
+### Form Data Parameters
+
+<ParamField body="file" type="file" required>
+  Audio file to analyze for voice clone detection.
+  
+  **Supported formats**: WAV, MP3, FLAC, OGG  
+  **Maximum size**: 20MB  
+  **Recommended size**: < 10MB for optimal performance
+</ParamField>
+
+<ParamField body="threshold" type="number" default="0.5">
+  Detection sensitivity threshold (0.0 to 1.0).
+  
+  - **0.2**: High sensitivity, more false positives
+  - **0.5**: Balanced detection (recommended)
+  - **0.8**: High precision, fewer false positives
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "is_voice_clone": true,
+  "confidence_score": 0.91,
+  "processing_time_ms": 320,
+  "model_info": {
+    "name": "voiceguard",
+    "version": "v1.2"
+  }
+}
+```
+
+<ResponseField name="is_voice_clone" type="boolean">
+  Whether the audio is likely a synthetic (cloned) voice based on the threshold.
+</ResponseField>
+<ResponseField name="confidence_score" type="number">
+  Detection confidence score (0.0 to 1.0).
+</ResponseField>
+<ResponseField name="processing_time_ms" type="number">
+  Time taken to process the audio in milliseconds.
+</ResponseField>
+<ResponseField name="model_info" type="object">
+  Information about the detection model used.
+  <Expandable title="model_info">
+    <ResponseField name="name" type="string">Model name (e.g., "voiceguard")</ResponseField>
+    <ResponseField name="version" type="string">Model version (e.g., "v1.2")</ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No File Provided">
+    ```json
+    {
+      "detail": "No file provided",
+      "status": 400
+    }
+    ```
+    **Cause**: Request sent without audio file  
+    **Solution**: Include audio file in form data
+  </Accordion>
+  <Accordion title="400 - Invalid Threshold">
+    ```json
+    {
+      "detail": "Threshold must be between 0.0 and 1.0",
+      "status": 400
+    }
+    ```
+    **Cause**: Threshold value outside valid range  
+    **Solution**: Use threshold between 0.0 and 1.0
+  </Accordion>
+  <Accordion title="413 - File Too Large">
+    ```json
+    {
+      "detail": "File size exceeds maximum limit",
+      "status": 413
+    }
+    ```
+    **Cause**: Audio file larger than 20MB  
+    **Solution**: Compress or trim audio before upload
+  </Accordion>
+  <Accordion title="415 - Unsupported Media Type">
+    ```json
+    {
+      "detail": "Unsupported audio format",
+      "status": 415
+    }
+    ```
+    **Cause**: Unsupported audio format  
+    **Solution**: Use WAV, MP3, FLAC, or OGG format
+  </Accordion>
+  <Accordion title="500 - Processing Error">
+    ```json
+    {
+      "detail": "Audio processing failed",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during audio analysis  
+    **Solution**: Check audio integrity, try different file
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8003/voice-clone-detection" \
+  -F "file=@sample_audio.wav" \
+  -F "threshold=0.5"
+```
+
+```python Python
+import requests
+
+def detect_voice_clone(audio_path, threshold=0.5):
+    url = "http://localhost:8003/voice-clone-detection"
+    with open(audio_path, 'rb') as file:
+        files = {'file': file}
+        data = {'threshold': threshold}
+        response = requests.post(url, files=files, data=data)
+        response.raise_for_status()
+        return response.json()
+
+# Example usage
+try:
+    result = detect_voice_clone("test_audio.wav", threshold=0.7)
+    print(f"Is Voice Clone: {result['is_voice_clone']}")
+    print(f"Confidence: {result['confidence_score']:.2f}")
+    print(f"Model: {result['model_info']['name']} v{result['model_info']['version']}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Threshold Selection Guide
+
+<CardGroup cols={3}>
+  <Card title="Call Center (0.3-0.4)" icon="phone">
+    Catch most synthetic voices, allow some false positives
+  </Card>
+  <Card title="General Purpose (0.5)" icon="balance-scale">
+    Balanced accuracy for most voice clone use cases
+  </Card>
+  <Card title="Banking/Authentication (0.7-0.8)" icon="lock">
+    High precision for security-critical applications
+  </Card>
+</CardGroup>
+
+## Performance Tips
+
+<Tip>
+**Optimize Upload Performance**
+- Trim silence and background noise from audio
+- Use lossless formats (WAV, FLAC) for best results
+- Compress audio to reduce file size
+</Tip>
+
+<Warning>
+**File Size Limits**
+- Maximum file size: 20MB
+- Recommended: < 10MB for best performance
+</Warning>
