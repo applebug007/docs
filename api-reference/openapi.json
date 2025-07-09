@@ -772,6 +772,114 @@
         }
       }
     },
+    "/batch-url-detection": {
+      "post": {
+        "summary": "Batch URL Detection",
+        "description": "Analyze multiple URLs for phishing, malware, or scam risks in a single request. Returns a verdict and confidence score for each URL.",
+        "operationId": "batchDetectUrls",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "urls": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Array of URLs to analyze.",
+                    "example": ["https://safe-site.com", "https://phishing-site.com"]
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Detection sensitivity threshold (0.0 to 1.0)",
+                    "default": 0.5,
+                    "example": 0.5
+                  }
+                },
+                "required": ["urls"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch URL analysis result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "url": { "type": "string", "description": "The URL that was analyzed." },
+                          "final_verdict": { "type": "string", "description": "Detection result: 'benign' or 'malicious'" },
+                          "confidence_score": { "type": "number", "description": "Detection confidence score (0.0 to 1.0)" },
+                          "processing_time_ms": { "type": "number", "description": "Time taken to process the URL in milliseconds." }
+                        },
+                        "required": ["url", "final_verdict", "confidence_score", "processing_time_ms"]
+                      }
+                    }
+                  },
+                  "required": ["results"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No URLs Provided": { "value": { "detail": "No URLs provided", "status": 400 } },
+                  "Invalid Threshold": { "value": { "detail": "Threshold must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity (invalid URL format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "One or more URLs are invalid", "status": 422 }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Batch URL processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
+    },
     "/qr-code-detection": {
       "post": {
         "summary": "Detect malicious or phishing QR codes",
