@@ -1,0 +1,142 @@
+---
+title: "Faceswap Health Check & API Info"
+openapi: "GET /faceswap/health"
+---
+
+## Faceswap Health Check Endpoint
+
+### GET /faceswap/health
+
+Monitor the status and health of the Faceswap Detection service.
+
+**Purpose**: Verify that the faceswap detection service is running and AI models are properly loaded before making detection requests.
+
+#### Response Format
+
+```json
+{
+  "status": "healthy",
+  "models_loaded": true,
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0",
+  "uptime_seconds": 3600,
+  "memory_usage": {
+    "total_mb": 2048,
+    "used_mb": 1024,
+    "available_mb": 1024
+  }
+}
+```
+
+<ResponseField name="status" type="string">
+  Overall service health status
+  - `"healthy"`: Service is running normally
+  - `"degraded"`: Service running but with issues
+  - `"unhealthy"`: Service has critical problems
+</ResponseField>
+
+<ResponseField name="models_loaded" type="boolean">
+  Whether faceswap detection models are loaded and ready
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp when health check was performed
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  Current version of the faceswap detection service
+</ResponseField>
+
+<ResponseField name="uptime_seconds" type="number">
+  Service uptime in seconds since last restart
+</ResponseField>
+
+<ResponseField name="memory_usage" type="object">
+  Memory usage statistics (optional)
+</ResponseField>
+
+#### Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8003/faceswap/health"
+```
+
+```python Python
+import requests
+
+def check_faceswap_health():
+    """
+    Check faceswap detection service health
+    
+    Returns:
+        dict: Health status information
+        bool: True if service is healthy, False otherwise
+    """
+    try:
+        response = requests.get("http://localhost:8003/faceswap/health", timeout=10)
+        response.raise_for_status()
+        
+        health_data = response.json()
+        is_healthy = (
+            health_data.get('status') == 'healthy' and 
+            health_data.get('models_loaded') == True
+        )
+        
+        return health_data, is_healthy
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Health check failed: {e}")
+        return None, False
+
+# Example usage
+health_info, is_ready = check_faceswap_health()
+if is_ready:
+    print("✅ Faceswap service is healthy and ready for detection requests")
+    print(f"Uptime: {health_info['uptime_seconds']} seconds")
+else:
+    print("❌ Faceswap service is not ready")
+```
+
+```javascript JavaScript
+async function checkFaceswapHealth() {
+    /**
+     * Check faceswap detection service health
+     * 
+     * @returns {Object} Health status and readiness
+     */
+    try {
+        const response = await fetch('http://localhost:8003/faceswap/health', {
+            method: 'GET',
+            timeout: 10000
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const healthData = await response.json();
+        const isHealthy = (
+            healthData.status === 'healthy' && 
+            healthData.models_loaded === true
+        );
+        
+        return { healthData, isHealthy };
+        
+    } catch (error) {
+        console.error('Health check failed:', error);
+        return { healthData: null, isHealthy: false };
+    }
+}
+
+// Example usage
+checkFaceswapHealth().then(({ healthData, isHealthy }) => {
+    if (isHealthy) {
+        console.log('✅ Faceswap service is healthy and ready');
+        console.log(`Uptime: ${healthData.uptime_seconds} seconds`);
+    } else {
+        console.log('❌ Faceswap service is not ready');
+    }
+});
+```
+</CodeGroup>

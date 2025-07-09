@@ -52,6 +52,55 @@
         }
       }
     },
+    "/faceswap/health": {
+      "get": {
+        "summary": "Faceswap Health Check",
+        "description": "Check the health status of the Faceswap Detection service.",
+        "operationId": "faceswapHealthCheck",
+        "responses": {
+          "default": {
+            "description": "Faceswap health check response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "healthy"
+                    },
+                    "models_loaded": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "uptime_seconds": {
+                      "type": "number",
+                      "example": 3600
+                    },
+                    "memory_usage": {
+                      "type": "object",
+                      "properties": {
+                        "total_mb": { "type": "number", "example": 2048 },
+                        "used_mb": { "type": "number", "example": 1024 },
+                        "available_mb": { "type": "number", "example": 1024 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/predict": {
       "post": {
         "summary": "Detect deepfakes or analyze for scam-related content",
@@ -621,6 +670,104 @@
           "default": {
             "description": "Plant deleted",
             "content": {}
+          }
+        }
+      }
+    },
+    "/url-detection": {
+      "post": {
+        "summary": "Detect malicious or phishing URLs",
+        "description": "Analyze a URL for phishing, malware, or scam risks and return a verdict and confidence score.",
+        "operationId": "detectUrl",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The URL to analyze for threats.",
+                    "example": "https://suspicious-website.com"
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Detection sensitivity threshold (0.0 to 1.0)",
+                    "default": 0.5,
+                    "example": 0.5
+                  }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "URL analysis result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": { "type": "string", "description": "The URL that was analyzed." },
+                    "final_verdict": { "type": "string", "description": "Detection result: 'benign' or 'malicious'" },
+                    "confidence_score": { "type": "number", "description": "Detection confidence score (0.0 to 1.0)" },
+                    "processing_time_ms": { "type": "number", "description": "Time taken to process the URL in milliseconds." }
+                  },
+                  "required": ["url", "final_verdict", "confidence_score", "processing_time_ms"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No URL Provided": { "value": { "detail": "No URL provided", "status": 400 } },
+                  "Invalid Threshold": { "value": { "detail": "Threshold must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity (invalid URL format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Invalid URL format", "status": 422 }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "URL processing failed", "status": 500 }
+              }
+            }
           }
         }
       }

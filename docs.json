@@ -85,10 +85,27 @@
                       "api-reference/endpoint/faceswap-health"
                     ]
                   },
-                  "api-reference/endpoint/url-detection",
-                  "api-reference/endpoint/voice-clone-detection",
-                  "api-reference/endpoint/document-fraud-detection",
-                  "api-reference/endpoint/ai-agent"
+                  {
+                    "group": "URL Malicious Detection",
+                    "pages": [
+                      "api-reference/endpoint/url-detection",
+                      "api-reference/endpoint/qr-code-detection",
+                      "api-reference/endpoint/batch-url-detection",
+                      "api-reference/endpoint/batch-qr-code-detection",
+                      "api-reference/endpoint/url-qr-health"
+                    ]
+                  },
+                  {
+                    "group": "Other Detection",
+                    "pages": [
+                      "api-reference/endpoint/voice-clone-detection",
+                      "api-reference/endpoint/document-fraud-detection",
+                      "api-reference/endpoint/ai-agent"
+                    ]
+
+                    
+                  }
+                 
                 ]
               },
               {
