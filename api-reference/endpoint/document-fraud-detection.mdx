@@ -1,10 +1,177 @@
 ---
-title: "Document Fraud Detection"
-openapi: "POST /document/fraud-detect"
+title: "Document Fraud Detection - File Upload"
+openapi: "POST /document-fraud-detection"
 ---
 
----
+## Overview
 
-<div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;">
-  author by Fuliang Trevor Xu and Zebang Jasper Hu
-</div>
+The `/document-fraud-detection` endpoint allows you to upload document image files for fraud detection analysis. The service analyzes the document to determine if it is fraudulent (e.g., tampered, forged, or fake) and returns a verdict and confidence score.
+
+## Request Parameters
+
+### Form Data Parameters
+
+<ParamField body="file" type="file" required>
+  Document image file to analyze for fraud detection.
+  
+  **Supported formats**: JPEG, PNG, PDF  
+  **Maximum size**: 10MB  
+  **Recommended size**: < 5MB for optimal performance
+</ParamField>
+
+<ParamField body="threshold" type="number" default="0.5">
+  Detection sensitivity threshold (0.0 to 1.0).
+  
+  - **0.2**: High sensitivity, more false positives
+  - **0.5**: Balanced detection (recommended)
+  - **0.8**: High precision, fewer false positives
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "is_fraudulent": true,
+  "confidence_score": 0.88,
+  "processing_time_ms": 210,
+  "model_info": {
+    "name": "docguard",
+    "version": "v2.0"
+  }
+}
+```
+
+<ResponseField name="is_fraudulent" type="boolean">
+  Whether the document is likely fraudulent based on the threshold.
+</ResponseField>
+<ResponseField name="confidence_score" type="number">
+  Detection confidence score (0.0 to 1.0).
+</ResponseField>
+<ResponseField name="processing_time_ms" type="number">
+  Time taken to process the document in milliseconds.
+</ResponseField>
+<ResponseField name="model_info" type="object">
+  Information about the detection model used.
+  <Expandable title="model_info">
+    <ResponseField name="name" type="string">Model name (e.g., "docguard")</ResponseField>
+    <ResponseField name="version" type="string">Model version (e.g., "v2.0")</ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No File Provided">
+    ```json
+    {
+      "detail": "No file provided",
+      "status": 400
+    }
+    ```
+    **Cause**: Request sent without document file  
+    **Solution**: Include document file in form data
+  </Accordion>
+  <Accordion title="400 - Invalid Threshold">
+    ```json
+    {
+      "detail": "Threshold must be between 0.0 and 1.0",
+      "status": 400
+    }
+    ```
+    **Cause**: Threshold value outside valid range  
+    **Solution**: Use threshold between 0.0 and 1.0
+  </Accordion>
+  <Accordion title="413 - File Too Large">
+    ```json
+    {
+      "detail": "File size exceeds maximum limit",
+      "status": 413
+    }
+    ```
+    **Cause**: Document file larger than 10MB  
+    **Solution**: Compress or resize document before upload
+  </Accordion>
+  <Accordion title="415 - Unsupported Media Type">
+    ```json
+    {
+      "detail": "Unsupported document format",
+      "status": 415
+    }
+    ```
+    **Cause**: Unsupported document format  
+    **Solution**: Use JPEG, PNG, or PDF format
+  </Accordion>
+  <Accordion title="500 - Processing Error">
+    ```json
+    {
+      "detail": "Document processing failed",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during document analysis  
+    **Solution**: Check document integrity, try different file
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8003/document-fraud-detection" \
+  -F "file=@sample_document.jpg" \
+  -F "threshold=0.5"
+```
+
+```python Python
+import requests
+
+def detect_document_fraud(doc_path, threshold=0.5):
+    url = "http://localhost:8003/document-fraud-detection"
+    with open(doc_path, 'rb') as file:
+        files = {'file': file}
+        data = {'threshold': threshold}
+        response = requests.post(url, files=files, data=data)
+        response.raise_for_status()
+        return response.json()
+
+# Example usage
+try:
+    result = detect_document_fraud("test_document.jpg", threshold=0.7)
+    print(f"Is Fraudulent: {result['is_fraudulent']}")
+    print(f"Confidence: {result['confidence_score']:.2f}")
+    print(f"Model: {result['model_info']['name']} v{result['model_info']['version']}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Threshold Selection Guide
+
+<CardGroup cols={3}>
+  <Card title="ID Verification (0.3-0.4)" icon="id-card">
+    Catch most fraudulent documents, allow some false positives
+  </Card>
+  <Card title="General Purpose (0.5)" icon="balance-scale">
+    Balanced accuracy for most document fraud use cases
+  </Card>
+  <Card title="Legal/Financial (0.7-0.8)" icon="gavel">
+    High precision for critical documents
+  </Card>
+</CardGroup>
+
+## Performance Tips
+
+<Tip>
+**Optimize Upload Performance**
+- Scan documents at 300dpi for best results
+- Use clear, high-contrast images
+- Compress files to reduce upload time
+</Tip>
+
+<Warning>
+**File Size Limits**
+- Maximum file size: 10MB
+- Recommended: < 5MB for best performance
+</Warning>
