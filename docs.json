@@ -96,7 +96,7 @@
                     ]
                   },
                   {
-                    "group": "URL Malicious Detection",
+                    "group": "Other Detection",
                     "pages": [
                       "api-reference/endpoint/voice-clone-detection",
                       "api-reference/endpoint/document-fraud-detection",

@@ -1,0 +1,185 @@
+---
+title: "Batch QR Code Detection"
+openapi: "POST /batch-qr-code-detection"
+---
+
+## Overview
+
+The `/batch-qr-code-detection` endpoint allows you to upload multiple QR code image files for threat analysis in a single request. The service decodes each QR code and checks the destination for phishing, malware, or scam risks, returning a verdict and confidence score for each.
+
+## Request Parameters
+
+### Form Data Parameters
+
+<ParamField body="images" type="array" required>
+  Array of QR code image files to analyze.
+  
+  **Supported formats**: JPEG, PNG, BMP, GIF, WEBP  
+  **Maximum size per file**: 10MB  
+  **Recommended size**: < 5MB for optimal performance
+</ParamField>
+
+<ParamField body="threshold" type="number" default="0.5">
+  Detection sensitivity threshold (0.0 to 1.0) for all QR codes.
+  
+  - **0.2**: High sensitivity, more false positives
+  - **0.5**: Balanced detection (recommended)
+  - **0.8**: High precision, fewer false positives
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "results": [
+    {
+      "decoded_url": "https://safe-site.com",
+      "final_verdict": "benign",
+      "confidence_score": 0.10,
+      "processing_time_ms": 90
+    },
+    {
+      "decoded_url": "https://malicious-site.com",
+      "final_verdict": "malicious",
+      "confidence_score": 0.97,
+      "processing_time_ms": 120
+    }
+  ]
+}
+```
+
+<ResponseField name="results" type="array">
+  Array of results for each QR code image submitted.
+  <Expandable title="Result Object">
+    <ResponseField name="decoded_url" type="string">The URL extracted from the QR code.</ResponseField>
+    <ResponseField name="final_verdict" type="string">Detection result: `benign` or `malicious`.</ResponseField>
+    <ResponseField name="confidence_score" type="number">Detection confidence score (0.0 to 1.0).</ResponseField>
+    <ResponseField name="processing_time_ms" type="number">Time taken to process the QR code in milliseconds.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No Images Provided">
+    ```json
+    {
+      "detail": "No images provided",
+      "status": 400
+    }
+    ```
+    **Cause**: Request sent without any image files  
+    **Solution**: Include at least one QR code image file in form data
+  </Accordion>
+  <Accordion title="400 - Invalid Threshold">
+    ```json
+    {
+      "detail": "Threshold must be between 0.0 and 1.0",
+      "status": 400
+    }
+    ```
+    **Cause**: Threshold value outside valid range  
+    **Solution**: Use threshold between 0.0 and 1.0
+  </Accordion>
+  <Accordion title="413 - File Too Large">
+    ```json
+    {
+      "detail": "One or more files exceed maximum size",
+      "status": 413
+    }
+    ```
+    **Cause**: At least one image file is larger than 10MB  
+    **Solution**: Compress or resize images before upload
+  </Accordion>
+  <Accordion title="415 - Unsupported Media Type">
+    ```json
+    {
+      "detail": "One or more files have unsupported format",
+      "status": 415
+    }
+    ```
+    **Cause**: At least one image file is not JPEG, PNG, BMP, GIF, or WEBP  
+    **Solution**: Use supported image formats
+  </Accordion>
+  <Accordion title="422 - Invalid QR Code">
+    ```json
+    {
+      "detail": "One or more QR codes could not be decoded",
+      "status": 422
+    }
+    ```
+    **Cause**: At least one image does not contain a valid QR code  
+    **Solution**: Upload only clear, valid QR code images
+  </Accordion>
+  <Accordion title="500 - Processing Error">
+    ```json
+    {
+      "detail": "Batch QR code processing failed",
+      "status": 500
+    }
+    ```
+    **Cause**: Error during batch QR code analysis  
+    **Solution**: Check images, try again later
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8003/batch-qr-code-detection" \
+  -F "images=@qr1.jpg" \
+  -F "images=@qr2.jpg" \
+  -F "threshold=0.5"
+```
+
+```python Python
+import requests
+
+def batch_detect_qr_codes(image_paths, threshold=0.5):
+    api_url = "http://localhost:8003/batch-qr-code-detection"
+    files = [("images", open(path, "rb")) for path in image_paths]
+    data = {"threshold": threshold}
+    response = requests.post(api_url, files=files, data=data)
+    response.raise_for_status()
+    return response.json()
+
+# Example usage
+try:
+    results = batch_detect_qr_codes([
+        "qr1.jpg",
+        "qr2.jpg"
+    ], threshold=0.7)
+    for result in results["results"]:
+        print(f"Decoded URL: {result['decoded_url']}")
+        print(f"Verdict: {result['final_verdict']}")
+        print(f"Confidence: {result['confidence_score']:.2f}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Threshold Selection Guide
+
+<CardGroup cols={3}>
+  <Card title="Event Entry (0.3-0.4)" icon="ticket-alt">
+    Catch most threats, allow some false positives
+  </Card>
+  <Card title="General Purpose (0.5)" icon="balance-scale">
+    Balanced accuracy for most batch QR code use cases
+  </Card>
+  <Card title="Payments (0.7-0.8)" icon="credit-card">
+    High precision for financial QR codes
+  </Card>
+</CardGroup>
+
+## Performance Tips
+
+<Tip>
+**Optimize Batch Performance**
+- Limit batch size for best response times
+- Use clear, high-contrast QR code images
+- Compress images to reduce file size
+</Tip> 

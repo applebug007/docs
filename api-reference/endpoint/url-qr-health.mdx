@@ -1,0 +1,100 @@
+---
+title: "URL & QR Detection Health Check"
+openapi: "GET /url-qr-health"
+---
+
+## Overview
+
+The `/url-qr-health` endpoint allows you to monitor the health and status of the URL and QR code detection services. Use this endpoint to verify that the detection services are running and models are loaded before making detection requests.
+
+## Health Check Endpoint
+
+### GET /url-qr-health
+
+Monitor the status and health of the URL and QR code detection services.
+
+**Purpose**: Verify that the detection services are running and models are loaded before making detection requests.
+
+## Response Format
+
+```json
+{
+  "status": "healthy",
+  "models_loaded": true,
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0",
+  "uptime_seconds": 3600,
+  "memory_usage": {
+    "total_mb": 2048,
+    "used_mb": 1024,
+    "available_mb": 1024
+  }
+}
+```
+
+<ResponseField name="status" type="string">
+  Overall service health status
+  - `"healthy"`: Service is running normally
+  - `"degraded"`: Service running but with issues
+  - `"unhealthy"`: Service has critical problems
+</ResponseField>
+
+<ResponseField name="models_loaded" type="boolean">
+  Whether detection models are loaded and ready
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp when health check was performed
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  Current version of the detection service
+</ResponseField>
+
+<ResponseField name="uptime_seconds" type="number">
+  Service uptime in seconds since last restart
+</ResponseField>
+
+<ResponseField name="memory_usage" type="object">
+  Memory usage statistics (optional)
+</ResponseField>
+
+## Code Example
+
+<CodeGroup>
+```bash cURL
+curl -X GET "http://localhost:8003/url-qr-health"
+```
+
+```python Python
+import requests
+
+def check_url_qr_health():
+    url = "http://localhost:8003/url-qr-health"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
+
+# Example usage
+try:
+    health = check_url_qr_health()
+    print(f"Status: {health['status']}")
+    print(f"Models loaded: {health['models_loaded']}")
+    print(f"Uptime: {health['uptime_seconds']} seconds")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Monitoring Tips
+
+<Tip>
+**Production Tip**
+- Implement health checks as part of your application startup sequence and monitoring strategy.
+- Regular health checks help ensure reliable service operation.
+</Tip>
+
+<Warning>
+**Service Dependencies**
+- Always check that `models_loaded` is `true` before making detection requests. Requests made before models are loaded will fail.
+</Warning> 

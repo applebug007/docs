@@ -1007,6 +1007,211 @@
           }
         }
       }
+    },
+    "/batch-qr-code-detection": {
+      "post": {
+        "summary": "Batch QR Code Detection",
+        "description": "Upload multiple QR code image files for threat analysis in a single request. Each QR code is decoded and checked for phishing, malware, or scam risks.",
+        "operationId": "batchDetectQRCodes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "binary" },
+                    "description": "Array of QR code image files to analyze."
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Detection sensitivity threshold (0.0 to 1.0)",
+                    "default": 0.5,
+                    "example": 0.5
+                  }
+                },
+                "required": ["images"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch QR code analysis result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "decoded_url": { "type": "string", "description": "The URL extracted from the QR code." },
+                          "final_verdict": { "type": "string", "description": "Detection result: 'benign' or 'malicious'" },
+                          "confidence_score": { "type": "number", "description": "Detection confidence score (0.0 to 1.0)" },
+                          "processing_time_ms": { "type": "number", "description": "Time taken to process the QR code in milliseconds." }
+                        },
+                        "required": ["decoded_url", "final_verdict", "confidence_score", "processing_time_ms"]
+                      }
+                    }
+                  },
+                  "required": ["results"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (missing or invalid parameters)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "examples": {
+                  "No Images Provided": { "value": { "detail": "No images provided", "status": 400 } },
+                  "Invalid Threshold": { "value": { "detail": "Threshold must be between 0.0 and 1.0", "status": 400 } }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large (file too large)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "One or more files exceed maximum size", "status": 413 }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type (invalid image format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "One or more files have unsupported format", "status": 415 }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity (invalid QR code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "One or more QR codes could not be decoded", "status": 422 }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error (processing error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": { "type": "string" },
+                    "status": { "type": "integer" }
+                  }
+                },
+                "example": { "detail": "Batch QR code processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/url-qr-health": {
+      "get": {
+        "summary": "URL & QR Detection Health Check",
+        "description": "Monitor the health and status of the URL and QR code detection services. Use this endpoint to verify that the detection services are running and models are loaded before making detection requests.",
+        "operationId": "urlQrHealthCheck",
+        "responses": {
+          "200": {
+            "description": "Health check response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Overall service health status (healthy, degraded, unhealthy)",
+                      "example": "healthy"
+                    },
+                    "models_loaded": {
+                      "type": "boolean",
+                      "description": "Whether detection models are loaded and ready",
+                      "example": true
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "ISO 8601 timestamp when health check was performed"
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "Current version of the detection service",
+                      "example": "1.0.0"
+                    },
+                    "uptime_seconds": {
+                      "type": "number",
+                      "description": "Service uptime in seconds since last restart",
+                      "example": 3600
+                    },
+                    "memory_usage": {
+                      "type": "object",
+                      "description": "Memory usage statistics (optional)",
+                      "properties": {
+                        "total_mb": { "type": "number", "example": 2048 },
+                        "used_mb": { "type": "number", "example": 1024 },
+                        "available_mb": { "type": "number", "example": 1024 }
+                      }
+                    }
+                  },
+                  "required": ["status", "models_loaded", "timestamp", "version", "uptime_seconds", "memory_usage"]
+                },
+                "example": {
+                  "status": "healthy",
+                  "models_loaded": true,
+                  "timestamp": "2024-01-15T10:30:00Z",
+                  "version": "1.0.0",
+                  "uptime_seconds": 3600,
+                  "memory_usage": {
+                    "total_mb": 2048,
+                    "used_mb": 1024,
+                    "available_mb": 1024
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
