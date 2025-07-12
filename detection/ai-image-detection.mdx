@@ -714,7 +714,7 @@ def batch_analyze_images(image_folder, output_file='results.csv'):
         output_file (str): Output CSV file name
     """
     results = []
-    image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif'}
+    image_extensions = {'.jpg', '.jpeg', '.png'}
     
     # Get all image files
     image_folder = Path(image_folder)
