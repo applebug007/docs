@@ -65,56 +65,43 @@
             ]
           },
           {
-            "group": "APIs",
+            "group": "GenAI Image/Videos",
             "pages": [
-              {
-                "group": "Defence APIs",
-                "pages": [
-                  {
-                    "group": "AI Detection",
-                    "pages": [
-                      "api-reference/endpoint/predict",
-                      "api-reference/endpoint/ai-content-detection",
-                      "api-reference/endpoint/get"
-                    ]
-                  },
-                  {
-                    "group": "Faceswap Detection",
-                    "pages": [
-                      "api-reference/endpoint/faceswap-detection",
-                      "api-reference/endpoint/faceswap-health"
-                    ]
-                  },
-                  {
-                    "group": "URL Malicious Detection",
-                    "pages": [
-                      "api-reference/endpoint/url-detection",
-                      "api-reference/endpoint/qr-code-detection",
-                      "api-reference/endpoint/batch-url-detection",
-                      "api-reference/endpoint/batch-qr-code-detection",
-                      "api-reference/endpoint/url-qr-health"
-                    ]
-                  },
-                  {
-                    "group": "Other Detection",
-                    "pages": [
-                      "api-reference/endpoint/voice-clone-detection",
-                      "api-reference/endpoint/document-fraud-detection",
-                      "api-reference/endpoint/ai-agent"
-                    ]
-
-                    
-                  }
-                 
-                ]
-              },
-              {
-                "group": "Attack APIs",
-                "pages": [
-                  "api-reference/endpoint/faceswap-attack",
-                  "api-reference/endpoint/voice-clone-attack"
-                ]
-              }
+              "api-reference/endpoint/predict",
+              "api-reference/endpoint/ai-content-detection",
+              "api-reference/endpoint/get"
+            ]
+          },
+          {
+            "group": "Deepfakes/Faceswap",
+            "pages": [
+              "api-reference/endpoint/faceswap-detection",
+              "api-reference/endpoint/faceswap-health",
+              "api-reference/endpoint/faceswap-attack"
+            ]
+          },
+          {
+            "group": "Link/QR Code",
+            "pages": [
+              "api-reference/endpoint/url-detection",
+              "api-reference/endpoint/qr-code-detection",
+              "api-reference/endpoint/batch-url-detection",
+              "api-reference/endpoint/batch-qr-code-detection",
+              "api-reference/endpoint/url-qr-health"
+            ]
+          },
+          {
+            "group": "Voice Cloning",
+            "pages": [
+              "api-reference/endpoint/voice-clone-detection",
+              "api-reference/endpoint/voice-clone-attack"
+            ]
+          },
+          {
+            "group": "Messages",
+            "pages": [
+              "api-reference/endpoint/document-fraud-detection",
+              "api-reference/endpoint/ai-agent"
             ]
           }
         ]
@@ -144,6 +131,10 @@
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
+  },
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": false
   },
   "navbar": {
     "links": [
