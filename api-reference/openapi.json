@@ -11,6 +11,10 @@
   "servers": [
     {
       "url": "https://www.scam.ai/api/process"
+    },
+    {
+      "url": "http://3.82.54.197:3001",
+      "description": "Registration and Authentication Server"
     }
   ],
   "security": [
@@ -1389,6 +1393,311 @@
                   }
                 },
                 "example": { "detail": "Audio processing failed", "status": 500 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "summary": "User Registration",
+        "description": "Register a new user account with email, password, and personal information. Returns an API key for authenticated access to the detection services.",
+        "operationId": "registerUser",
+        "servers": [
+          {
+            "url": "http://3.82.54.197:3001",
+            "description": "Registration Server"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address",
+                    "example": "demo@sentinal.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "User's password (will be securely hashed)",
+                    "example": "SecurePass123!"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "description": "User's first name",
+                    "example": "Demo"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "description": "User's last name",
+                    "example": "User"
+                  }
+                },
+                "required": ["email", "password", "firstName", "lastName"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User registered successfully"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Unique user identifier"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key for authenticated requests",
+                      "example": "ac2aa777faf1d0e4c65f66c452380074cbf60e2b750b1a8ec2debe10587"
+                    }
+                  },
+                  "required": ["success", "message", "user", "apiKey"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (validation errors)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": ["Email is required", "Password must be at least 8 characters"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (user already exists)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User with this email already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "User Login",
+        "description": "Authenticate a user with email and password. Returns an API key for authenticated access to the detection services.",
+        "operationId": "loginUser",
+        "servers": [
+          {
+            "url": "http://3.82.54.197:3001",
+            "description": "Registration Server"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address",
+                    "example": "demo@sentinal.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "User's password",
+                    "example": "SecurePass123!"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Login successful"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Unique user identifier"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key for authenticated requests",
+                      "example": "ac2aa777faf1d0e4c65f66c452380074cbf60e2b750b1a8ec2debe10587"
+                    }
+                  },
+                  "required": ["success", "message", "user", "apiKey"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (validation errors)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Email and password are required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized (invalid credentials)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid email or password"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
               }
             }
           }
