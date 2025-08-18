@@ -21,7 +21,8 @@
           {
             "group": "Getting Started",
             "pages": [
-              "introduction"
+              "introduction",
+              "support"
             ]
           },
           {
@@ -140,7 +141,7 @@
     "links": [
       {
         "label": "Support",
-        "href": "https://www.scam.ai/contact"
+        "href": "/support"
       }
     ]
   },
