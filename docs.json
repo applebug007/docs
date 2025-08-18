@@ -21,8 +21,7 @@
           {
             "group": "Getting Started",
             "pages": [
-              "introduction",
-              "support"
+              "introduction"
             ]
           },
           {
@@ -139,10 +138,10 @@
   },
   "navbar": {
     "links": [
-      {
-        "label": "Support",
-        "href": "/support"
-      }
+              {
+          "label": "Support",
+          "href": "/support"
+        }
     ]
   },
   "footer": {
