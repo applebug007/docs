@@ -138,10 +138,10 @@
   },
   "navbar": {
     "links": [
-              {
-          "label": "Support",
-          "href": "/support"
-        }
+      {
+        "label": "Support",
+        "href": "support"
+      }
     ]
   },
   "footer": {
