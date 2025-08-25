@@ -77,7 +77,8 @@
             "pages": [
               "api-reference/endpoint/faceswap-detection",
               "api-reference/endpoint/faceswap-health",
-              "api-reference/endpoint/faceswap-attack"
+              "api-reference/endpoint/faceswap-attack",
+              "api-reference/endpoint/deepfake-image-detection"
             ]
           },
           {
@@ -102,6 +103,18 @@
             "pages": [
               "api-reference/endpoint/document-fraud-detection",
               "api-reference/endpoint/ai-agent"
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              "api-reference/endpoint/password-reset"
+            ]
+          },
+          {
+            "group": "Proxy & Gateway",
+            "pages": [
+              "api-reference/endpoint/detection-proxy"
             ]
           }
         ]

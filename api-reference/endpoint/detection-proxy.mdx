@@ -1,0 +1,669 @@
+---
+title: "Detection Proxy"
+openapi: "POST /api/detection/proxy"
+---
+
+## Overview
+
+The detection proxy endpoint acts as a bridge between the frontend and backend API Gateway, resolving CORS issues and providing a unified interface for detection requests. This proxy handles authentication, request forwarding, and response formatting for all detection services.
+
+**Purpose**: Enable secure communication with backend detection services while avoiding cross-origin restrictions and centralizing API key management.
+
+## Request Parameters
+
+### JSON Body Parameters
+
+<ParamField body="endpoint" type="string" required>
+  Target endpoint path on the API Gateway.
+  
+  **Format**: Path starting with `/`  
+  **Example**: `"/api/v1/detect/ai-image"`  
+  **Base URL**: Automatically prepended with API Gateway URL
+</ParamField>
+
+<ParamField body="data" type="object" required>
+  Request payload to forward to the target endpoint.
+  
+  **Format**: JSON object  
+  **Content**: Varies by target endpoint  
+  **Example**: Detection parameters, image data, etc.
+</ParamField>
+
+<ParamField body="apiKey" type="string" required>
+  API key for authentication with the backend service.
+  
+  **Format**: String token  
+  **Usage**: Forwarded as `X-API-Key` header  
+  **Security**: Validated by backend API Gateway
+</ParamField>
+
+## Request Examples
+
+### AI Image Detection Request
+
+```json
+{
+  "endpoint": "/api/v1/detect/ai-image",
+  "data": {
+    "task_id": "detect-001",
+    "timestamp": "2025-01-22T10:30:00.000Z",
+    "data": {
+      "type": "base64",
+      "payload": "/9j/4AAQSkZJRgABAQAAAQABAAD..."
+    },
+    "usecase_environment": {
+      "threshold": 0.7
+    }
+  },
+  "apiKey": "your-api-key-here"
+}
+```
+
+### Voice Detection Request
+
+```json
+{
+  "endpoint": "/api/v1/detect/voice-clone",
+  "data": {
+    "audio_data": "base64-encoded-audio",
+    "reference_voice": "base64-reference",
+    "sensitivity": 0.8
+  },
+  "apiKey": "your-api-key-here"
+}
+```
+
+## Response Format
+
+### Success Response (200)
+
+The proxy forwards the exact response from the target endpoint:
+
+```json
+{
+  "task_id": "detect-001",
+  "timestamp": "2025-01-22T10:30:00.000Z",
+  "result": {
+    "status": "completed",
+    "confidence_score": 0.87,
+    "likely_ai_generated": true,
+    "processing_time_ms": 245
+  }
+}
+```
+
+<ResponseField name="response" type="any">
+  Direct response from the target API endpoint
+  
+  **Format**: Varies by target endpoint  
+  **Content**: Original response is passed through unchanged  
+  **Headers**: Relevant headers are preserved
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - Missing Required Fields">
+    ```json
+    {
+      "message": "Missing required fields: endpoint, data, or apiKey"
+    }
+    ```
+    **Cause**: One or more required fields missing from request  
+    **Solution**: Include all required fields: endpoint, data, apiKey
+  </Accordion>
+  
+  <Accordion title="401 - Invalid API Key">
+    ```json
+    {
+      "message": "Invalid API key"
+    }
+    ```
+    **Cause**: API key rejected by backend service  
+    **Solution**: Verify API key is valid and has proper permissions
+  </Accordion>
+  
+  <Accordion title="404 - Endpoint Not Found">
+    ```json
+    {
+      "message": "Detection failed: 404"
+    }
+    ```
+    **Cause**: Target endpoint does not exist on API Gateway  
+    **Solution**: Verify endpoint path is correct
+  </Accordion>
+  
+  <Accordion title="500 - Proxy Error">
+    ```json
+    {
+      "message": "Detection request failed"
+    }
+    ```
+    **Cause**: Internal proxy error or network issue  
+    **Solution**: Check network connectivity and retry
+  </Accordion>
+  
+  <Accordion title="503 - Service Unavailable">
+    ```json
+    {
+      "message": "Backend API Gateway unavailable"
+    }
+    ```
+    **Cause**: API Gateway is down or unreachable  
+    **Solution**: Check backend service status
+  </Accordion>
+</AccordionGroup>
+
+## CORS Support
+
+The endpoint includes proper CORS headers for cross-origin requests:
+
+### OPTIONS Request Support
+
+```bash
+curl -X OPTIONS "http://localhost:3000/api/detection/proxy" \
+  -H "Origin: https://your-frontend-domain.com"
+```
+
+### CORS Headers
+
+- `Access-Control-Allow-Origin: *`
+- `Access-Control-Allow-Methods: POST, OPTIONS`
+- `Access-Control-Allow-Headers: Content-Type, Authorization`
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+# AI Image Detection via proxy
+curl -X POST "http://localhost:3000/api/detection/proxy" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint": "/api/v1/detect/ai-image",
+    "data": {
+      "task_id": "curl-test-001",
+      "data": {
+        "type": "base64",
+        "payload": "'$(base64 -i image.jpg)'"
+      },
+      "usecase_environment": {
+        "threshold": 0.7
+      }
+    },
+    "apiKey": "your-api-key-here"
+  }'
+
+# Voice Clone Detection via proxy
+curl -X POST "http://localhost:3000/api/detection/proxy" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint": "/api/v1/detect/voice-clone",
+    "data": {
+      "audio_data": "'$(base64 -i audio.wav)'",
+      "sensitivity": 0.8
+    },
+    "apiKey": "your-api-key-here"
+  }'
+```
+
+```javascript JavaScript
+class DetectionProxy {
+    constructor(baseUrl = 'http://localhost:3000') {
+        this.baseUrl = baseUrl;
+        this.proxyEndpoint = `${baseUrl}/api/detection/proxy`;
+    }
+
+    async makeDetectionRequest(endpoint, data, apiKey) {
+        /**
+         * Make detection request via proxy
+         * 
+         * @param {string} endpoint - Target API endpoint path
+         * @param {Object} data - Request payload for target endpoint
+         * @param {string} apiKey - API key for authentication
+         * @returns {Object} Detection results
+         */
+        try {
+            const response = await fetch(this.proxyEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    endpoint,
+                    data,
+                    apiKey
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ 
+                    message: `HTTP ${response.status}: ${response.statusText}` 
+                }));
+                throw new Error(error.message);
+            }
+
+            return await response.json();
+
+        } catch (error) {
+            console.error('Detection proxy request failed:', error);
+            throw error;
+        }
+    }
+
+    async detectAIImage(imageData, apiKey, options = {}) {
+        /**
+         * Detect AI-generated images via proxy
+         * 
+         * @param {string} imageData - Base64 encoded image
+         * @param {string} apiKey - API key
+         * @param {Object} options - Detection options
+         * @returns {Object} Detection results
+         */
+        const data = {
+            task_id: options.taskId || `ai-detect-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            data: {
+                type: "base64",
+                payload: imageData
+            },
+            usecase_environment: {
+                threshold: options.threshold || 0.5
+            },
+            ai_model_info: {
+                model_name: options.modelName || "patchcraft",
+                model_version: options.modelVersion || "v0.1"
+            }
+        };
+
+        return this.makeDetectionRequest('/api/v1/detect/ai-image', data, apiKey);
+    }
+
+    async detectVoiceClone(audioData, referenceVoice, apiKey, options = {}) {
+        /**
+         * Detect voice cloning via proxy
+         * 
+         * @param {string} audioData - Base64 encoded audio
+         * @param {string} referenceVoice - Base64 encoded reference
+         * @param {string} apiKey - API key
+         * @param {Object} options - Detection options
+         * @returns {Object} Detection results
+         */
+        const data = {
+            audio_data: audioData,
+            reference_voice: referenceVoice,
+            sensitivity: options.sensitivity || 0.8,
+            task_id: options.taskId || `voice-detect-${Date.now()}`
+        };
+
+        return this.makeDetectionRequest('/api/v1/detect/voice-clone', data, apiKey);
+    }
+
+    async detectDeepfake(imageData, apiKey, options = {}) {
+        /**
+         * Detect deepfakes via proxy
+         * 
+         * @param {string} imageData - Base64 encoded image
+         * @param {string} apiKey - API key
+         * @param {Object} options - Detection options
+         * @returns {Object} Detection results
+         */
+        const data = {
+            image_data: imageData,
+            sensitivity: options.sensitivity || 0.7,
+            models: options.models || ["defender_expert"],
+            task_id: options.taskId || `deepfake-detect-${Date.now()}`
+        };
+
+        return this.makeDetectionRequest('/api/v1/detect/deepfake', data, apiKey);
+    }
+}
+
+// Example usage
+const detector = new DetectionProxy();
+
+// File input handler
+document.getElementById('imageInput').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        // Convert file to base64
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        // Detect AI image
+        const apiKey = localStorage.getItem('apiKey');
+        const result = await detector.detectAIImage(base64, apiKey, {
+            threshold: 0.7,
+            taskId: `upload-${Date.now()}`
+        });
+
+        console.log('Detection result:', result);
+        displayResult(result);
+
+    } catch (error) {
+        console.error('Detection failed:', error.message);
+        alert(`Detection failed: ${error.message}`);
+    }
+});
+
+// Batch detection example
+async function batchDetection(files, apiKey) {
+    const results = [];
+    
+    for (const file of files) {
+        try {
+            const base64 = await fileToBase64(file);
+            const result = await detector.detectAIImage(base64, apiKey);
+            results.push({ file: file.name, result });
+        } catch (error) {
+            results.push({ file: file.name, error: error.message });
+        }
+    }
+    
+    return results;
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+```
+
+```python Python
+import requests
+import json
+import base64
+from typing import Dict, Any, Optional
+
+class DetectionProxy:
+    def __init__(self, base_url: str = "http://localhost:3000"):
+        self.base_url = base_url
+        self.proxy_endpoint = f"{base_url}/api/detection/proxy"
+
+    def make_detection_request(self, endpoint: str, data: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        """
+        Make detection request via proxy
+        
+        Args:
+            endpoint: Target API endpoint path
+            data: Request payload for target endpoint
+            api_key: API key for authentication
+            
+        Returns:
+            Detection results dictionary
+        """
+        payload = {
+            "endpoint": endpoint,
+            "data": data,
+            "apiKey": api_key
+        }
+        
+        try:
+            response = requests.post(
+                self.proxy_endpoint,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=60
+            )
+            
+            if not response.ok:
+                error_data = response.json() if response.content else {}
+                error_message = error_data.get('message', f'HTTP {response.status_code}')
+                raise Exception(error_message)
+            
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Detection proxy request failed: {e}")
+
+    def detect_ai_image(self, image_path: str, api_key: str, **options) -> Dict[str, Any]:
+        """
+        Detect AI-generated images via proxy
+        
+        Args:
+            image_path: Path to image file
+            api_key: API key for authentication
+            **options: Detection options (threshold, task_id, etc.)
+            
+        Returns:
+            Detection results
+        """
+        # Read and encode image
+        with open(image_path, 'rb') as f:
+            image_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        data = {
+            "task_id": options.get('task_id', f'ai-detect-{int(time.time())}'),
+            "timestamp": datetime.now().isoformat(),
+            "data": {
+                "type": "base64",
+                "payload": image_data
+            },
+            "usecase_environment": {
+                "threshold": options.get('threshold', 0.5)
+            },
+            "ai_model_info": {
+                "model_name": options.get('model_name', 'patchcraft'),
+                "model_version": options.get('model_version', 'v0.1')
+            }
+        }
+        
+        return self.make_detection_request('/api/v1/detect/ai-image', data, api_key)
+
+    def detect_voice_clone(self, audio_path: str, reference_path: str, api_key: str, **options) -> Dict[str, Any]:
+        """
+        Detect voice cloning via proxy
+        
+        Args:
+            audio_path: Path to audio file to analyze
+            reference_path: Path to reference audio file
+            api_key: API key for authentication
+            **options: Detection options
+            
+        Returns:
+            Detection results
+        """
+        # Read and encode audio files
+        with open(audio_path, 'rb') as f:
+            audio_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        with open(reference_path, 'rb') as f:
+            reference_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        data = {
+            "audio_data": audio_data,
+            "reference_voice": reference_data,
+            "sensitivity": options.get('sensitivity', 0.8),
+            "task_id": options.get('task_id', f'voice-detect-{int(time.time())}')
+        }
+        
+        return self.make_detection_request('/api/v1/detect/voice-clone', data, api_key)
+
+    def detect_deepfake(self, image_path: str, api_key: str, **options) -> Dict[str, Any]:
+        """
+        Detect deepfakes via proxy
+        
+        Args:
+            image_path: Path to image file
+            api_key: API key for authentication
+            **options: Detection options
+            
+        Returns:
+            Detection results
+        """
+        # Read and encode image
+        with open(image_path, 'rb') as f:
+            image_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        data = {
+            "image_data": image_data,
+            "sensitivity": options.get('sensitivity', 0.7),
+            "models": options.get('models', ["defender_expert"]),
+            "task_id": options.get('task_id', f'deepfake-detect-{int(time.time())}')
+        }
+        
+        return self.make_detection_request('/api/v1/detect/deepfake', data, api_key)
+
+# Example usage
+def main():
+    detector = DetectionProxy()
+    api_key = "your-api-key-here"
+    
+    try:
+        # AI Image Detection
+        print("Testing AI image detection...")
+        ai_result = detector.detect_ai_image(
+            "test_image.jpg", 
+            api_key,
+            threshold=0.7,
+            task_id="python-test-001"
+        )
+        print(f"AI Detection Result: {ai_result}")
+        
+        # Voice Clone Detection
+        print("\nTesting voice clone detection...")
+        voice_result = detector.detect_voice_clone(
+            "test_audio.wav",
+            "reference_audio.wav",
+            api_key,
+            sensitivity=0.8
+        )
+        print(f"Voice Clone Result: {voice_result}")
+        
+        # Deepfake Detection
+        print("\nTesting deepfake detection...")
+        deepfake_result = detector.detect_deepfake(
+            "test_face.jpg",
+            api_key,
+            sensitivity=0.7,
+            models=["defender_expert", "sbi_expert"]
+        )
+        print(f"Deepfake Result: {deepfake_result}")
+        
+    except Exception as e:
+        print(f"Detection error: {e}")
+
+if __name__ == "__main__":
+    import time
+    from datetime import datetime
+    main()
+```
+</CodeGroup>
+
+## Configuration
+
+### Environment Variables
+
+The proxy uses the following environment variables:
+
+```bash
+# API Gateway URL (default: http://localhost:3002)
+NEXT_PUBLIC_API_GATEWAY_URL=https://api.example.com
+
+# Request timeout (default: 60 seconds)
+DETECTION_TIMEOUT=60
+
+# CORS settings
+CORS_ALLOWED_ORIGINS=*
+CORS_ALLOWED_METHODS=POST,OPTIONS
+CORS_ALLOWED_HEADERS=Content-Type,Authorization
+```
+
+### API Gateway Integration
+
+The proxy connects to your backend API Gateway at:
+- **Default URL**: `http://localhost:3002`
+- **Production**: Set `NEXT_PUBLIC_API_GATEWAY_URL` environment variable
+- **Authentication**: API keys forwarded as `X-API-Key` header
+
+## Best Practices
+
+### Error Handling
+
+```javascript
+async function handleDetectionWithRetry(detector, endpoint, data, apiKey, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            return await detector.makeDetectionRequest(endpoint, data, apiKey);
+        } catch (error) {
+            console.log(`Attempt ${attempt} failed:`, error.message);
+            
+            if (attempt === maxRetries) {
+                throw error;
+            }
+            
+            // Exponential backoff
+            const delay = Math.pow(2, attempt) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+```
+
+### API Key Management
+
+```javascript
+class SecureDetectionProxy extends DetectionProxy {
+    constructor(baseUrl, keyStorage) {
+        super(baseUrl);
+        this.keyStorage = keyStorage; // Secure key storage implementation
+    }
+    
+    async getApiKey() {
+        // Retrieve API key from secure storage
+        return await this.keyStorage.getKey();
+    }
+    
+    async detectWithAuth(endpoint, data) {
+        const apiKey = await this.getApiKey();
+        return this.makeDetectionRequest(endpoint, data, apiKey);
+    }
+}
+```
+
+### Request Validation
+
+```javascript
+function validateDetectionRequest(endpoint, data, apiKey) {
+    const errors = [];
+    
+    if (!endpoint || typeof endpoint !== 'string') {
+        errors.push('Endpoint must be a non-empty string');
+    }
+    
+    if (!endpoint.startsWith('/')) {
+        errors.push('Endpoint must start with "/"');
+    }
+    
+    if (!data || typeof data !== 'object') {
+        errors.push('Data must be an object');
+    }
+    
+    if (!apiKey || typeof apiKey !== 'string') {
+        errors.push('API key must be a non-empty string');
+    }
+    
+    return errors;
+}
+```
+
+<Info>
+**CORS Resolution**: This proxy specifically resolves CORS issues when calling backend APIs from browser environments. Use direct API calls when CORS is not a concern.
+</Info>
+
+<Warning>
+**API Key Security**: Never expose API keys in client-side code. Consider implementing server-side API key management for production applications.
+</Warning>
+
+<Note>
+**Gateway Dependency**: This proxy requires the backend API Gateway to be running and accessible. Ensure proper network connectivity and service availability.
+</Note>
