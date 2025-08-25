@@ -1,0 +1,557 @@
+---
+title: "Deepfake Image Detection"
+openapi: "POST /api/models/deepfake"
+---
+
+## Overview
+
+The deepfake image detection endpoint processes images to detect AI-generated faces, deepfakes, and face-swap content. This endpoint supports both single and multiple image uploads with configurable sensitivity and model selection.
+
+**Purpose**: Detect manipulated faces, deepfakes, and face-swap content in images with high accuracy using specialized detection models.
+
+## Authentication
+
+This endpoint requires a valid session. Users must be authenticated via NextAuth.
+
+## Request Parameters
+
+### Multipart Form Data
+
+<ParamField body="files" type="file[]" required>
+  Image files to analyze for deepfake content.
+  
+  **Supported formats**: JPEG, PNG, GIF, BMP, WebP  
+  **Multiple files**: Supported for batch processing  
+  **Alternative field**: `file` (single file, backward compatibility)
+</ParamField>
+
+<ParamField body="sensitivity" type="string" default="50">
+  Detection sensitivity as a percentage.
+  
+  **Range**: 1-100  
+  **Format**: String representation of percentage  
+  **Example**: `"75"` (converted to 0.75 internally)  
+  **Default**: `"50"` (0.5 sensitivity)
+</ParamField>
+
+<ParamField body="models" type="string">
+  JSON array of detection models to use.
+  
+  **Format**: JSON string array  
+  **Example**: `'["defender_expert", "sbi_expert"]'`  
+  **Default**: Uses default model if not specified
+</ParamField>
+
+## Response Format
+
+### Success Response (200)
+
+```json
+{
+  "results": [
+    {
+      "filename": "suspicious_photo.jpg",
+      "faces": [
+        {
+          "face_index": 0,
+          "blended_fakeness_score": 0.85,
+          "expert_predictions": {
+            "defender_expert": 0.82,
+            "sbi_expert": 0.88
+          },
+          "confidence_scores": {
+            "overall": "85.00%",
+            "defender_expert": "82.00%",
+            "sbi_expert": "88.00%"
+          },
+          "risk_assessment": "High Risk",
+          "bounding_box": {
+            "x": 150,
+            "y": 100,
+            "width": 200,
+            "height": 240
+          }
+        }
+      ],
+      "processing_info": {
+        "sensitivity_used": "75% (0.75)",
+        "models_used": ["defender_expert", "sbi_expert"],
+        "processing_time": 1234
+      }
+    }
+  ],
+  "total_files": 1,
+  "total_faces": 1,
+  "processing_time_ms": 1500
+}
+```
+
+<ResponseField name="results" type="array">
+  Array of detection results for each processed image
+  
+  <Expandable title="Result object properties">
+    <ResponseField name="filename" type="string">
+      Name of the processed image file
+    </ResponseField>
+    
+    <ResponseField name="faces" type="array">
+      Array of detected faces with analysis results
+      
+      <Expandable title="Face object properties">
+        <ResponseField name="face_index" type="number">
+          Index of the detected face in the image
+        </ResponseField>
+        
+        <ResponseField name="blended_fakeness_score" type="number">
+          Overall deepfake confidence score (0.0 to 1.0)
+          - 0.0: Authentic face
+          - 1.0: Highly likely deepfake
+        </ResponseField>
+        
+        <ResponseField name="expert_predictions" type="object">
+          Individual model predictions
+          
+          <Expandable title="Expert predictions">
+            <ResponseField name="defender_expert" type="number">
+              Defender expert model prediction score
+            </ResponseField>
+            
+            <ResponseField name="sbi_expert" type="number">
+              SBI expert model prediction score
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="confidence_scores" type="object">
+          Formatted confidence scores for UI display
+          
+          <Expandable title="Confidence scores">
+            <ResponseField name="overall" type="string">
+              Overall confidence as percentage string
+            </ResponseField>
+            
+            <ResponseField name="defender_expert" type="string">
+              Defender expert confidence as percentage
+            </ResponseField>
+            
+            <ResponseField name="sbi_expert" type="string">
+              SBI expert confidence as percentage
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="risk_assessment" type="string">
+          Human-readable risk level
+          - `"Low Risk"`: Score < 0.3
+          - `"Medium Risk"`: Score 0.3-0.7
+          - `"High Risk"`: Score > 0.7
+        </ResponseField>
+        
+        <ResponseField name="bounding_box" type="object">
+          Face location coordinates in the image
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="processing_info" type="object">
+      Processing metadata and configuration used
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total_files" type="number">
+  Total number of files processed
+</ResponseField>
+
+<ResponseField name="total_faces" type="number">
+  Total number of faces detected across all images
+</ResponseField>
+
+<ResponseField name="processing_time_ms" type="number">
+  Total processing time in milliseconds
+</ResponseField>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 - No Files Provided">
+    ```json
+    {
+      "detail": "No files provided",
+      "results": []
+    }
+    ```
+    **Cause**: No files uploaded in request  
+    **Solution**: Include image files in the multipart form data
+  </Accordion>
+  
+  <Accordion title="400 - Invalid File Type">
+    ```json
+    {
+      "detail": "Invalid file type for example.txt. Please upload image files only.",
+      "results": []
+    }
+    ```
+    **Cause**: Non-image file uploaded  
+    **Solution**: Only upload image files (JPEG, PNG, GIF, BMP, WebP)
+  </Accordion>
+  
+  <Accordion title="401 - Unauthorized">
+    ```json
+    {
+      "error": "Unauthorized"
+    }
+    ```
+    **Cause**: User not authenticated  
+    **Solution**: Ensure user is logged in via NextAuth
+  </Accordion>
+  
+  <Accordion title="500 - Service Unavailable">
+    ```json
+    {
+      "detail": "Failed to connect to deepfake detection service",
+      "results": [],
+      "error": "Connection timeout",
+      "timestamp": "2025-01-22T10:30:00.000Z"
+    }
+    ```
+    **Cause**: External deepfake API unavailable  
+    **Solution**: Check service status and retry
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+<CodeGroup>
+```bash cURL
+# Single image detection
+curl -X POST "http://localhost:3000/api/models/deepfake" \
+  -H "Cookie: next-auth.session-token=your-session-token" \
+  -F "files=@suspicious_image.jpg" \
+  -F "sensitivity=75" \
+  -F 'models=["defender_expert", "sbi_expert"]'
+
+# Multiple images with default settings
+curl -X POST "http://localhost:3000/api/models/deepfake" \
+  -H "Cookie: next-auth.session-token=your-session-token" \
+  -F "files=@image1.jpg" \
+  -F "files=@image2.jpg" \
+  -F "files=@image3.png"
+```
+
+```javascript JavaScript
+async function detectDeepfakes(files, sensitivity = 50, models = null) {
+    /**
+     * Detect deepfakes in image files
+     * 
+     * @param {FileList|File[]} files - Image files to analyze
+     * @param {number} sensitivity - Detection sensitivity (1-100)
+     * @param {string[]} models - Detection models to use
+     * @returns {Object} Detection results
+     */
+    try {
+        const formData = new FormData();
+        
+        // Add files
+        if (files instanceof FileList) {
+            Array.from(files).forEach(file => {
+                formData.append('files', file);
+            });
+        } else if (Array.isArray(files)) {
+            files.forEach(file => {
+                formData.append('files', file);
+            });
+        } else {
+            formData.append('files', files);
+        }
+        
+        // Add parameters
+        formData.append('sensitivity', sensitivity.toString());
+        
+        if (models && Array.isArray(models)) {
+            formData.append('models', JSON.stringify(models));
+        }
+        
+        const response = await fetch('/api/models/deepfake', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('Deepfake detection failed:', error);
+        throw error;
+    }
+}
+
+// Example usage with file input
+document.getElementById('fileInput').addEventListener('change', async (event) => {
+    const files = event.target.files;
+    if (files.length === 0) return;
+    
+    try {
+        const results = await detectDeepfakes(files, 75, ['defender_expert', 'sbi_expert']);
+        
+        console.log(`Processed ${results.total_files} files`);
+        console.log(`Found ${results.total_faces} faces`);
+        
+        results.results.forEach((result, index) => {
+            console.log(`\nFile ${index + 1}: ${result.filename}`);
+            
+            result.faces.forEach((face, faceIndex) => {
+                const risk = face.risk_assessment;
+                const score = face.confidence_scores.overall;
+                
+                console.log(`  Face ${faceIndex + 1}: ${risk} (${score})`);
+                
+                if (face.blended_fakeness_score > 0.7) {
+                    console.warn(`    ⚠️ High deepfake probability detected!`);
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error('Detection error:', error.message);
+    }
+});
+
+// Drag and drop example
+function setupDragAndDrop(dropZoneId) {
+    const dropZone = document.getElementById(dropZoneId);
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+    
+    dropZone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        
+        const files = Array.from(e.dataTransfer.files).filter(file => 
+            file.type.startsWith('image/')
+        );
+        
+        if (files.length === 0) {
+            alert('Please drop image files only');
+            return;
+        }
+        
+        try {
+            const results = await detectDeepfakes(files, 60);
+            displayResults(results);
+        } catch (error) {
+            alert(`Detection failed: ${error.message}`);
+        }
+    });
+}
+```
+
+```python Python
+import requests
+from typing import List, Optional, Union
+
+def detect_deepfakes(
+    session_token: str,
+    files: Union[str, List[str]],
+    sensitivity: int = 50,
+    models: Optional[List[str]] = None,
+    base_url: str = "http://localhost:3000"
+) -> dict:
+    """
+    Detect deepfakes in image files
+    
+    Args:
+        session_token: NextAuth session token
+        files: Single file path or list of file paths
+        sensitivity: Detection sensitivity (1-100)
+        models: List of detection models to use
+        base_url: Base URL of the application
+        
+    Returns:
+        Detection results dictionary
+    """
+    url = f"{base_url}/api/models/deepfake"
+    headers = {"Cookie": f"next-auth.session-token={session_token}"}
+    
+    # Prepare files for upload
+    files_to_upload = []
+    file_paths = [files] if isinstance(files, str) else files
+    
+    try:
+        for file_path in file_paths:
+            with open(file_path, 'rb') as f:
+                files_to_upload.append(('files', (file_path, f.read(), 'image/jpeg')))
+        
+        # Prepare form data
+        data = {
+            'sensitivity': str(sensitivity)
+        }
+        
+        if models:
+            data['models'] = json.dumps(models)
+        
+        response = requests.post(
+            url,
+            headers=headers,
+            files=files_to_upload,
+            data=data,
+            timeout=60
+        )
+        response.raise_for_status()
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Deepfake detection failed: {e}")
+        raise
+    except FileNotFoundError as e:
+        print(f"File not found: {e}")
+        raise
+
+def analyze_results(results: dict) -> None:
+    """
+    Analyze and print deepfake detection results
+    
+    Args:
+        results: Detection results from API
+    """
+    print(f"Detection Results Summary:")
+    print(f"  Files processed: {results['total_files']}")
+    print(f"  Faces detected: {results['total_faces']}")
+    print(f"  Processing time: {results['processing_time_ms']}ms")
+    
+    for i, result in enumerate(results['results']):
+        print(f"\nFile {i+1}: {result['filename']}")
+        
+        if not result['faces']:
+            print("  No faces detected")
+            continue
+            
+        for j, face in enumerate(result['faces']):
+            risk = face['risk_assessment']
+            score = face['confidence_scores']['overall']
+            
+            print(f"  Face {j+1}: {risk} ({score})")
+            
+            if face['blended_fakeness_score'] > 0.7:
+                print(f"    ⚠️  HIGH DEEPFAKE PROBABILITY!")
+                print(f"    Models agree: Defender={face['confidence_scores']['defender_expert']}, "
+                      f"SBI={face['confidence_scores']['sbi_expert']}")
+
+# Example usage
+if __name__ == "__main__":
+    session_token = "your-session-token-here"
+    
+    try:
+        # Single image detection
+        results = detect_deepfakes(
+            session_token,
+            "suspicious_image.jpg",
+            sensitivity=75,
+            models=["defender_expert", "sbi_expert"]
+        )
+        
+        analyze_results(results)
+        
+        # Batch detection
+        batch_results = detect_deepfakes(
+            session_token,
+            ["image1.jpg", "image2.jpg", "image3.png"],
+            sensitivity=60
+        )
+        
+        print("\n" + "="*50)
+        print("BATCH RESULTS")
+        print("="*50)
+        analyze_results(batch_results)
+        
+    except Exception as e:
+        print(f"Error: {e}")
+```
+</CodeGroup>
+
+## Detection Models
+
+The endpoint supports multiple expert detection models:
+
+### Available Models
+
+- **defender_expert**: Specialized in detecting sophisticated deepfakes
+- **sbi_expert**: Statistical analysis-based detection model
+
+### Model Selection
+
+- **Default**: Uses optimized model combination if no models specified
+- **Custom**: Specify models array for targeted detection
+- **Ensemble**: Multiple models provide consensus scoring
+
+## Best Practices
+
+### File Handling
+
+```javascript
+// Validate files before upload
+function validateImageFiles(files) {
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    return Array.from(files).filter(file => {
+        if (!validTypes.includes(file.type)) {
+            console.warn(`Skipping ${file.name}: Invalid file type`);
+            return false;
+        }
+        
+        if (file.size > maxSize) {
+            console.warn(`Skipping ${file.name}: File too large (${file.size} bytes)`);
+            return false;
+        }
+        
+        return true;
+    });
+}
+```
+
+### Sensitivity Tuning
+
+- **Low sensitivity (20-40)**: Catch obvious deepfakes, fewer false positives
+- **Medium sensitivity (50-70)**: Balanced detection (recommended)
+- **High sensitivity (80-100)**: Detect subtle manipulations, more false positives
+
+### Results Interpretation
+
+```javascript
+function interpretResults(face) {
+    const score = face.blended_fakeness_score;
+    
+    if (score < 0.3) {
+        return { level: 'low', message: 'Likely authentic' };
+    } else if (score < 0.7) {
+        return { level: 'medium', message: 'Possible manipulation detected' };
+    } else {
+        return { level: 'high', message: 'High probability of deepfake' };
+    }
+}
+```
+
+<Info>
+**Processing Time**: Detection time varies based on image size, number of faces, and selected models. Typical processing time is 1-3 seconds per image.
+</Info>
+
+<Warning>
+**File Size Limits**: Ensure images are under 10MB each. Large images may timeout or fail processing.
+</Warning>
+
+<Note>
+**Model Availability**: The endpoint connects to external deepfake detection services. Ensure the service is running and accessible for successful detection.
+</Note>

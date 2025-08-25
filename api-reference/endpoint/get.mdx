@@ -569,3 +569,401 @@ monitor.startMonitoring();
 <Warning>
 **Service Dependencies**: Always check that `models_loaded` is `true` before making detection requests. Requests made before models are loaded will fail.
 </Warning>
+
+---
+
+## Dashboard Test Images Endpoint
+
+### GET /api/defence/dashboard/images/test
+
+Get paginated test image data with detection results for dashboard development and testing purposes.
+
+**Purpose**: Provide mock data from multiple detection services (AI Image Detection and Deepfake Detection) for frontend development without requiring actual processing infrastructure.
+
+#### Request Parameters
+
+### Query Parameters
+
+<ParamField query="limit" type="number" default="20">
+  Maximum number of images to return per page.
+  
+  **Range**: 1-50  
+  **Example**: `?limit=10`
+</ParamField>
+
+<ParamField query="offset" type="number" default="0">
+  Number of images to skip for pagination.
+  
+  **Example**: `?offset=20`
+</ParamField>
+
+#### Response Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "images": [
+      {
+        "id": "1",
+        "taskId": "task-123",
+        "serviceType": "AI_IMAGE_DETECTION",
+        "status": "completed",
+        "createdAt": "2025-01-22T10:30:00.000Z",
+        "image": {
+          "s3Key": "detection/ai-image/user123/2025-01-22/abc-test1.jpg",
+          "presignedUrl": "https://via.placeholder.com/400x400/ff6b6b/ffffff?text=Threat+Detected",
+          "expiresAt": "2025-01-22T11:30:00.000Z"
+        },
+        "detection": {
+          "confidence": 0.92,
+          "detected": true,
+          "results": {
+            "threatType": "Deepfake",
+            "analysis": "High confidence AI-generated image detected",
+            "markers": ["facial_inconsistencies", "digital_artifacts"]
+          }
+        },
+        "metadata": {
+          "fileName": "suspicious_photo.jpg",
+          "fileSize": 1024000,
+          "mimeType": "image/jpeg"
+        },
+        "processingTime": 1500,
+        "completedAt": "2025-01-22T10:30:00.000Z"
+      },
+      {
+        "id": "3",
+        "taskId": "task-789",
+        "serviceType": "DEEPFAKE_DETECTION",
+        "status": "processing",
+        "createdAt": "2025-01-22T09:30:00.000Z",
+        "image": {
+          "s3Key": "detection/deepfake/user123/2025-01-22/ghi-test3.jpg",
+          "presignedUrl": "https://via.placeholder.com/400x400/feca57/ffffff?text=Processing",
+          "expiresAt": "2025-01-22T11:30:00.000Z"
+        },
+        "detection": {
+          "confidence": null,
+          "detected": null,
+          "results": null
+        },
+        "metadata": {
+          "fileName": "video_frame.jpg",
+          "fileSize": 1536000,
+          "mimeType": "image/jpeg"
+        },
+        "processingTime": null,
+        "completedAt": null
+      }
+    ],
+    "pagination": {
+      "totalCount": 4,
+      "totalPages": 1,
+      "currentPage": 1,
+      "limit": 20,
+      "offset": 0,
+      "hasNextPage": false,
+      "hasPreviousPage": false
+    },
+    "filters": {
+      "sortBy": "createdAt",
+      "sortOrder": "desc"
+    },
+    "urlConfig": {
+      "expiresIn": 3600,
+      "expiresAt": "2025-01-22T11:30:00.000Z"
+    },
+    "stats": {
+      "totalImages": 4,
+      "detectedThreats": 2,
+      "pendingAnalysis": 1,
+      "averageConfidence": 0.6467
+    }
+  },
+  "message": "Test images retrieved successfully"
+}
+```
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Main response data container
+</ResponseField>
+
+<ResponseField name="data.images" type="array">
+  Array of image detection records from multiple services
+  
+  <Expandable title="Image object properties">
+    <ResponseField name="id" type="string">
+      Unique image identifier
+    </ResponseField>
+    
+    <ResponseField name="taskId" type="string">
+      Associated detection task ID
+    </ResponseField>
+    
+    <ResponseField name="serviceType" type="string">
+      Detection service that processed this image
+      - `"AI_IMAGE_DETECTION"`: General AI-generated content detection
+      - `"DEEPFAKE_DETECTION"`: Specialized deepfake detection
+    </ResponseField>
+    
+    <ResponseField name="status" type="string">
+      Processing status
+      - `"completed"`: Analysis finished successfully
+      - `"processing"`: Analysis in progress
+      - `"failed"`: Analysis failed
+    </ResponseField>
+    
+    <ResponseField name="detection" type="object">
+      Detection analysis results
+      
+      <Expandable title="Detection properties">
+        <ResponseField name="confidence" type="number">
+          Detection confidence score (0.0 to 1.0), null if processing
+        </ResponseField>
+        
+        <ResponseField name="detected" type="boolean">
+          Whether a threat was detected, null if processing
+        </ResponseField>
+        
+        <ResponseField name="results" type="object">
+          Detailed detection results, null if processing
+          
+          <Expandable title="Results properties">
+            <ResponseField name="threatType" type="string">
+              Type of threat detected: `"Deepfake"`, `"Manipulated"`, etc.
+            </ResponseField>
+            
+            <ResponseField name="analysis" type="string">
+              Human-readable analysis description
+            </ResponseField>
+            
+            <ResponseField name="markers" type="array">
+              Array of detection markers/indicators
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.pagination" type="object">
+  Pagination information
+  
+  <Expandable title="Pagination properties">
+    <ResponseField name="totalCount" type="number">
+      Total number of images available
+    </ResponseField>
+    
+    <ResponseField name="totalPages" type="number">
+      Total number of pages based on limit
+    </ResponseField>
+    
+    <ResponseField name="currentPage" type="number">
+      Current page number (1-based)
+    </ResponseField>
+    
+    <ResponseField name="hasNextPage" type="boolean">
+      Whether there are more pages available
+    </ResponseField>
+    
+    <ResponseField name="hasPreviousPage" type="boolean">
+      Whether there are previous pages available
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.filters" type="object">
+  Current filter and sorting settings
+</ResponseField>
+
+<ResponseField name="data.urlConfig" type="object">
+  Presigned URL configuration
+</ResponseField>
+
+<ResponseField name="data.stats" type="object">
+  Aggregate statistics across all detection services
+  
+  <Expandable title="Statistics properties">
+    <ResponseField name="totalImages" type="number">
+      Total number of images across all services
+    </ResponseField>
+    
+    <ResponseField name="detectedThreats" type="number">
+      Number of images with detected threats
+    </ResponseField>
+    
+    <ResponseField name="pendingAnalysis" type="number">
+      Number of images still being processed
+    </ResponseField>
+    
+    <ResponseField name="averageConfidence" type="number">
+      Average confidence score across completed analyses
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable success message
+</ResponseField>
+
+### Error Responses
+
+#### 401 - Unauthorized
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+**Cause**: User is not authenticated or session is invalid  
+**Solution**: Ensure user is logged in via NextAuth
+
+#### 500 - Internal Server Error
+
+```json
+{
+  "error": "Failed to get test images",
+  "message": "Internal server error details"
+}
+```
+**Cause**: Unexpected server error  
+**Solution**: Check server logs and try again
+
+#### Code Examples
+
+<CodeGroup>
+```bash cURL
+# Basic request
+curl -X GET "http://localhost:3000/api/defence/dashboard/images/test" \
+  -H "Cookie: next-auth.session-token=your-session-token"
+
+# With pagination
+curl -X GET "http://localhost:3000/api/defence/dashboard/images/test?limit=10&offset=20" \
+  -H "Cookie: next-auth.session-token=your-session-token"
+```
+
+```javascript JavaScript
+async function getDashboardTestImages(limit = 20, offset = 0) {
+    /**
+     * Fetch dashboard test images with pagination
+     * 
+     * @param {number} limit - Number of images per page
+     * @param {number} offset - Number of images to skip
+     * @returns {Object} Dashboard images data
+     */
+    try {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            offset: offset.toString()
+        });
+        
+        const response = await fetch(`/api/defence/dashboard/images/test?${params}`, {
+            method: 'GET',
+            credentials: 'include', // Include session cookies
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('Failed to fetch dashboard images:', error);
+        throw error;
+    }
+}
+
+// Example usage
+getDashboardTestImages(10, 0).then(data => {
+    console.log(`Total images: ${data.data.stats.totalImages}`);
+    console.log(`Detected threats: ${data.data.stats.detectedThreats}`);
+    
+    data.data.images.forEach(image => {
+        const status = image.detection.detected ? '🔴 THREAT' : '🟢 SAFE';
+        console.log(`Image ${image.id}: ${status} (${image.serviceType})`);
+    });
+});
+```
+
+```python Python
+import requests
+
+def get_dashboard_test_images(session_token, limit=20, offset=0):
+    """
+    Fetch dashboard test images with pagination
+    
+    Args:
+        session_token: NextAuth session token
+        limit: Number of images per page (1-50)
+        offset: Number of images to skip
+        
+    Returns:
+        Dashboard images data
+    """
+    url = "http://localhost:3000/api/defence/dashboard/images/test"
+    params = {"limit": min(limit, 50), "offset": offset}
+    headers = {"Cookie": f"next-auth.session-token={session_token}"}
+    
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=30)
+        response.raise_for_status()
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch dashboard images: {e}")
+        raise
+
+# Example usage
+session_token = "your-session-token-here"
+data = get_dashboard_test_images(session_token, limit=10)
+
+print(f"Total images: {data['data']['stats']['totalImages']}")
+print(f"Threats detected: {data['data']['stats']['detectedThreats']}")
+
+for image in data['data']['images']:
+    status = "🔴 THREAT" if image['detection']['detected'] else "🟢 SAFE"
+    print(f"Image {image['id']}: {status} ({image['serviceType']})")
+```
+</CodeGroup>
+
+#### Test Data
+
+The endpoint returns 4 predefined mock records:
+
+1. **AI_IMAGE_DETECTION - High Confidence Deepfake** (92% confidence)
+   - Status: `"completed"`
+   - Threat Type: `"Deepfake"`
+   - S3 Key: `detection/ai-image/user123/...`
+
+2. **AI_IMAGE_DETECTION - Safe Authentic Image** (15% confidence)
+   - Status: `"completed"`
+   - Detected: `false`
+   - S3 Key: `detection/ai-image/user123/...`
+
+3. **DEEPFAKE_DETECTION - Processing Status** (currently analyzing)
+   - Status: `"processing"`
+   - Results: `null` (still processing)
+   - S3 Key: `detection/deepfake/user123/...`
+
+4. **AI_IMAGE_DETECTION - Medium Manipulation** (65% confidence)
+   - Status: `"completed"`
+   - Threat Type: `"Manipulated"`
+   - S3 Key: `detection/ai-image/user123/...`
+
+<Note>
+**Authentication Required**: This endpoint requires a valid NextAuth session. Ensure users are authenticated before making requests.
+</Note>
+
+<Info>
+**Development Purpose**: This endpoint provides realistic test data for dashboard development. In production, replace with actual database queries aggregating real detection results.
+</Info>
