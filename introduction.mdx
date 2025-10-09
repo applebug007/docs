@@ -1,171 +1,70 @@
 ---
 title: Introduction
-description: 'Scam AI is the modern AI-powered platform for you to detect deepfakes, identify phishing attempts, and prevent advanced scams.'
+description: 'Scam AI - AI-powered detection for deepfakes, voice clones, GenAI content, and malicious URLs/QR codes.'
 ---
 
 # Scam AI Documentation
 
-Scam AI is the modern AI-powered platform for you to detect deepfakes, identify phishing attempts, and prevent advanced scams.
-
-Whether you are:
-
-<CardGroup cols={2}>
-  <Card
-    title="Business Owner"
-    icon="building"
-    href="#"
-  >
-    Looking to protect your customers from fraudulent communications
-  </Card>
-  <Card
-    title="Content Creator"
-    icon="camera"
-    href="#"
-  >
-    Looking to verify the authenticity of media you encounter
-  </Card>
-  <Card
-    title="Developer"
-    icon="code"
-    href="#"
-  >
-    Looking to integrate scam detection APIs into your application
-  </Card>
-  <Card
-    title="Individual"
-    icon="user"
-    href="#"
-  >
-    Looking to stay safe online from evolving digital threats
-  </Card>
-</CardGroup>
+Scam AI provides AI-powered detection APIs for four core threat categories: **Deepfakes**, **Voice Clones**, **GenAI Content**, and **URL/QR Code** threats.
 
 ## What is Scam AI?
 
-**ScamAI** is your comprehensive platform for detecting and preventing AI-driven fraud. We offer tools (APIs) designed to simulate, detect, and defend against modern threats like:
+**Scam AI** detects and prevents AI-driven fraud through specialized APIs for:
 
-- **Deepfake** – AI-generated videos where someone's face is replaced with another person's face
-- **Voice clones** – Synthetic audio that mimics a real person's voice using AI
-- **Document forgeries** – Fake or manipulated identity documents, certificates, or official papers
-- **Synthetic content** – Any media (text, images, videos, audio) created entirely by AI systems
+- **Deepfakes** – Detect face-swapped videos and images
+- **Voice Clones** – Identify synthetic audio impersonation
+- **GenAI Content** – Spot AI-generated images and media
+- **URL/QR Codes** – Detect malicious links and phishing attempts
 
-**Simply put: We help you detect and prevent AI-generated fake content, such as videos with swapped faces or cloned voices, before they can cause harm to your business or users.**
-
-## AI Detection Capabilities
-
-<CardGroup cols={3}>
-  <Card
-    title="Text and Links"
-    icon="link"
-    href="/detection/text-and-links"
-  >
-    Email, SMS, Links or QR Code - Detect scam patterns, phishing attempts, and content to keep you safe.
-  </Card>
-  <Card
-    title="Deepfake & Voice-clone"
-    icon="face-grin-beam"
-    href="/detection/deepfake-voice-clone"
-  >
-    Detect deepfakes, voice-clone, and manipulated media with our advanced AI models.
-  </Card>
-  <Card
-    title="GenAI Image and Content"
-    icon="image"
-    href="/detection/genai-content"
-  >
-    Detect synthetic medias, like Google Veo 3, Midjourney, Kling and more.
-  </Card>
-</CardGroup>
-
-## Understanding AI Threats
-
-In today's digital landscape, artificial intelligence has made it easier than ever to create convincing fake content. Understanding these threats is the first step in protecting yourself and your organization:
-
-### 1. Deepfakes
-Deepfakes are AI-generated videos or images where a person's face is replaced with someone else's face. These can be used for:
-- Identity theft and impersonation
-- Spreading misinformation
-- Creating non-consensual content
-- Fraud and social engineering attacks
-
-### 2. Voice Cloning
-Voice cloning technology can create synthetic speech that sounds like a specific person using just a few minutes of their voice. This can be used for:
-- Phone-based fraud and scams
-- Bypassing voice authentication systems
-- Creating fake audio evidence
-- Impersonating trusted individuals
-
-## Key Features
-
-ScamAI is more than just a fraud detection tool — it's a complete defence and attack stack built for the deepfake era.
-
-### 🛡️ Defence APIs
-
-These APIs help identify and mitigate AI-generated fraud:
-
-- **Deepfake Detection** – Detect when someone's face has been digitally replaced in images or videos using AI technology. *Perfect for online identity verification systems, video conferencing platforms, and social media content moderation.*
-
-- **Voice Clone Detection** – Identify when audio has been artificially generated to sound like a specific person's voice. *Ideal for call center fraud prevention, voice-based authentication systems, and audio content verification.*
-
-- **Document Fraud Detection** – Spot fake or tampered identity documents, certificates, and official papers. *Essential for KYC processes, employee onboarding verification, and financial service applications.*
-
-- **AI Content Detection** – Determine whether text, images, or videos were created by AI systems or real humans. *Useful for content moderation, academic integrity checks, and social media authenticity verification.*
-
-- **AI Agent** – A real-time audio scam detection bot that listens to live conversations and identifies potential fraud attempts. *Example: During a customer service call, it can detect if the caller is using a cloned voice to impersonate an account holder.*
-
-### 🔺 Attack APIs
-
-These APIs simulate threats to help you test defences and build robust systems:
-
-- **Deepfake Attack** – Generate synthetic face-swapped images for testing your detection systems or benchmarking performance. *Useful for training your security teams and validating detection accuracy.*
-
-- **Voice Clone Attack** – Create voice clones from input audio to simulate potential impersonation attacks and test your defences. *Helps you understand your system's vulnerabilities before real attackers do.*
-
-## Getting Started
+## Detection Capabilities
 
 <CardGroup cols={2}>
   <Card
-    title="Quickstart"
-    icon="rocket"
-    href="/quickstart"
+    title="Deepfake Detection"
+    icon="face-grin-beam"
+    href="/deepfake/introduction"
   >
-    Get up and running with Scam AI in under 5 minutes
+    Detect face-swapped videos and images
   </Card>
   <Card
-    title="Generate API Key"
-    icon="key"
-    href="/generate-key"
+    title="Voice Clone Detection"
+    icon="microphone"
+    href="/voice-clone/introduction"
   >
-    Learn how to generate and manage your API keys
+    Identify synthetic audio impersonation
+  </Card>
+  <Card
+    title="GenAI Content Detection"
+    icon="image"
+    href="/detection/genai-content"
+  >
+    Spot AI-generated images and media
+  </Card>
+  <Card
+    title="URL & QR Code Detection"
+    icon="link"
+    href="/detection/text-and-links"
+  >
+    Detect malicious links and phishing attempts
   </Card>
 </CardGroup>
 
-## Base URL
-
-The Base URL for all API endpoints is:
-
-```
-https://www.scam.ai/api
-```
-
 ## Authentication
 
-Authentication to Scam AI's API is performed via the Authorization header with a Bearer token.
+All API requests require an API key in the header:
 
-```
-Authorization: Bearer xxxxxx
+```bash
+x-api-key: YOUR_API_KEY
 ```
 
 Contact us at [dev@scam.ai](mailto:dev@scam.ai) to get your API key.
 
-## Complete API Suite
-
-Our comprehensive API suite provides attack, defense, and security capabilities to help you build robust systems against AI-powered threats.
+## API Reference
 
 <Card
-  title="View API Reference"
+  title="View API Documentation"
   icon="code"
-  href="./api-reference/endpoint/faceswap-detection"
+  href="/api-reference/endpoint/predict"
 >
-  Explore our complete API documentation with examples and integration guides
+  Explore complete API documentation with examples
 </Card>

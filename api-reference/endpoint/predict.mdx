@@ -1,11 +1,11 @@
 ---
-title: "AI Image Detection - File Upload"
-openapi: "POST /predict"
+title: "GenAI Image Detection"
+openapi: "POST /ai-image-detection/detect-file"
 ---
 
 ## Overview
 
-The `/predict` endpoint allows you to upload image files directly for AI detection analysis. This is the most straightforward method for detecting AI-generated images when you have image files on your local system.
+Detect AI-generated images using file upload. Upload image files directly to analyze whether they were created by AI systems like Midjourney, DALL-E, Stable Diffusion, and others.
 
 ## Request Parameters
 
@@ -16,15 +16,12 @@ The `/predict` endpoint allows you to upload image files directly for AI detecti
   
   **Supported formats**: JPEG, PNG, BMP, GIF, WEBP  
   **Maximum size**: 10MB  
-  **Recommended size**: < 5MB for optimal performance
 </ParamField>
 
-<ParamField body="threshold" type="number" default="0.5">
-  Detection sensitivity threshold (0.0 to 1.0).
-  
-  - **0.2**: High sensitivity, catches more AI images but may have false positives
-  - **0.5**: Balanced detection (recommended for most use cases)  
-  - **0.8**: High precision, fewer false positives but may miss some AI images
+### Headers
+
+<ParamField header="x-api-key" type="string" required>
+  Your API key for authentication
 </ParamField>
 
 ## Response Format
@@ -156,67 +153,61 @@ The `/predict` endpoint allows you to upload image files directly for AI detecti
 
 <CodeGroup>
 ```bash cURL
-# Basic detection with default threshold
-curl -X POST "http://localhost:8003/predict" \
-  -F "file=@sample_image.jpg"
-
-# Detection with custom threshold
-curl -X POST "http://localhost:8003/predict" \
-  -F "file=@sample_image.jpg" \
-  -F "threshold=0.8"
+curl -X POST "https://api.scam.ai/api/defence/ai-image-detection/detect-file" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -F "file=@/path/to/your/image.png"
 ```
 
 ```python Python
 import requests
 
-def detect_ai_image(image_path, threshold=0.5):
+def detect_ai_image(image_path, api_key):
     """
     Detect AI generation in image file
     
     Args:
         image_path (str): Path to image file
-        threshold (float): Detection threshold (0.0-1.0)
+        api_key (str): Your API key
         
     Returns:
         dict: Detection results
     """
-    url = "http://localhost:8003/predict"
+    url = "https://api.scam.ai/api/defence/ai-image-detection/detect-file"
+    headers = {"x-api-key": api_key}
     
     with open(image_path, 'rb') as file:
         files = {'file': file}
-        data = {'threshold': threshold}
-        
-        response = requests.post(url, files=files, data=data)
+        response = requests.post(url, files=files, headers=headers)
         response.raise_for_status()
-        
         return response.json()
 
 # Example usage
 try:
-    result = detect_ai_image("test_image.jpg", threshold=0.7)
+    result = detect_ai_image("test_image.jpg", "YOUR_API_KEY")
     print(f"AI Generated: {result['likely_ai_generated']}")
     print(f"Confidence: {result['confidence_score']:.2f}")
-    print(f"Processing Time: {result['processing_time_ms']}ms")
 except requests.exceptions.RequestException as e:
     print(f"Error: {e}")
 ```
 
 ```javascript JavaScript
-async function detectAIImage(file, threshold = 0.5) {
+async function detectAIImage(file, apiKey) {
     /**
      * Detect AI generation in image file
      * 
      * @param {File} file - Image file object
-     * @param {number} threshold - Detection threshold (0.0-1.0)
+     * @param {string} apiKey - Your API key
      * @returns {Object} Detection results
      */
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('threshold', threshold.toString());
     
     try {
-        const response = await fetch('http://localhost:8003/predict', {
+        const response = await fetch('https://api.scam.ai/api/defence/ai-image-detection/detect-file', {
             method: 'POST',
+            headers: {
+                'x-api-key': apiKey
+            },
             body: formData
         });
         
@@ -237,7 +228,7 @@ document.getElementById('fileInput').addEventListener('change', async (event) =>
     const file = event.target.files[0];
     if (file) {
         try {
-            const result = await detectAIImage(file, 0.6);
+            const result = await detectAIImage(file, 'YOUR_API_KEY');
             console.log('Detection Result:', result);
         } catch (error) {
             console.error('Error:', error.message);
@@ -248,18 +239,22 @@ document.getElementById('fileInput').addEventListener('change', async (event) =>
 
 ```php PHP
 <?php
-function detectAIImage($imagePath, $threshold = 0.5) {
-    $url = 'http://localhost:8003/predict';
+function detectAIImage($imagePath, $apiKey) {
+    $url = 'https://api.scam.ai/api/defence/ai-image-detection/detect-file';
     
     $postData = array(
-        'file' => new CURLFile($imagePath),
-        'threshold' => $threshold
+        'file' => new CURLFile($imagePath)
+    );
+    
+    $headers = array(
+        'x-api-key: ' . $apiKey
     );
     
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     
@@ -276,10 +271,9 @@ function detectAIImage($imagePath, $threshold = 0.5) {
 
 // Example usage
 try {
-    $result = detectAIImage('test_image.jpg', 0.5);
+    $result = detectAIImage('test_image.jpg', 'YOUR_API_KEY');
     echo "AI Generated: " . ($result['likely_ai_generated'] ? 'Yes' : 'No') . "\n";
     echo "Confidence: " . round($result['confidence_score'], 2) . "\n";
-    echo "Processing Time: " . $result['processing_time_ms'] . "ms\n";
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }

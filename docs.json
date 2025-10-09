@@ -25,32 +25,29 @@
             ]
           },
           {
-            "group": "Detection Methods",
-            "pages": [
-              "detection/overview",
-              "detection/ai-image-detection",
-              "detection/text-and-links",
-              "detection/deepfake-voice-clone",
-              "detection/genai-content",
-              "detection/postman-guide",
-              "detection/health-monitoring",
-              "detection/production-deployment"
-            ]
-          },
-          {
             "group": "Deepfake Detection",
             "pages": [
               "deepfake/introduction",
-              "deepfake/detect",
-              "deepfake/health-check"
+              "deepfake/detect"
             ]
           },
           {
             "group": "Voice Clone Detection",
             "pages": [
               "voice-clone/introduction",
-              "voice-clone/detect",
-              "voice-clone/health-check"
+              "voice-clone/detect"
+            ]
+          },
+          {
+            "group": "GenAI Content Detection",
+            "pages": [
+              "detection/genai-content"
+            ]
+          },
+          {
+            "group": "URL & QR Code Detection",
+            "pages": [
+              "detection/text-and-links"
             ]
           }
         ]
@@ -59,73 +56,29 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Overview",
-            "pages": [
-              "api-reference/api-overview"
-            ]
-          },
-          {
-            "group": "GenAI Image/Videos",
+            "group": "GenAI Detection",
             "pages": [
               "api-reference/endpoint/predict",
-              "api-reference/endpoint/ai-content-detection",
-              "api-reference/endpoint/get"
+              "api-reference/endpoint/ai-content-detection"
             ]
           },
           {
-            "group": "Deepfakes/Faceswap",
+            "group": "Deepfake Detection",
             "pages": [
-              "api-reference/endpoint/faceswap-detection",
-              "api-reference/endpoint/faceswap-health",
-              "api-reference/endpoint/faceswap-attack",
-              "api-reference/endpoint/deepfake-image-detection"
+              "api-reference/endpoint/faceswap-detection"
             ]
           },
           {
-            "group": "Link/QR Code",
+            "group": "Voice Clone Detection",
+            "pages": [
+              "api-reference/endpoint/voice-clone-detection"
+            ]
+          },
+          {
+            "group": "URL & QR Code Detection",
             "pages": [
               "api-reference/endpoint/url-detection",
-              "api-reference/endpoint/qr-code-detection",
-              "api-reference/endpoint/batch-url-detection",
-              "api-reference/endpoint/batch-qr-code-detection",
-              "api-reference/endpoint/url-qr-health"
-            ]
-          },
-          {
-            "group": "Voice Cloning",
-            "pages": [
-              "api-reference/endpoint/voice-clone-detection",
-              "api-reference/endpoint/voice-clone-attack"
-            ]
-          },
-          {
-            "group": "Messages",
-            "pages": [
-              "api-reference/endpoint/document-fraud-detection",
-              "api-reference/endpoint/ai-agent"
-            ]
-          },
-          {
-            "group": "Authentication",
-            "pages": [
-              "api-reference/endpoint/password-reset"
-            ]
-          },
-          {
-            "group": "Proxy & Gateway",
-            "pages": [
-              "api-reference/endpoint/detection-proxy"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Changelog",
-        "groups": [
-          {
-            "group": "Changelog",
-            "pages": [
-              "updates/changelog"
+              "api-reference/endpoint/qr-code-detection"
             ]
           }
         ]
