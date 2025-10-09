@@ -1,25 +1,58 @@
 ---
-title: "Faceswap Detection"
+title: "Deepfake Detection"
 openapi: "POST /faceswap/detect"
 ---
 
+## Overview
+
+Detect deepfakes and face-swapped content in images and videos using our AI-powered detection system.
+
+## Image Detection
+
+Detect deepfakes in image files (JPEG, PNG, etc.)
+
 <RequestExample>
 
-```bash cURL
-curl -X POST "https://www.scam.ai/api/process/faceswap/detect" \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "data": {
-      "type": "base64",
-      "payload": "{{sampleImageBase64}}"
-    },
-    "task_id": "detect-faceswap-1749686204",
-    "usecase_environment": {
-      "detection_threshold": 0.8,
-      "analysis_mode": "comprehensive"
-    }
-  }'
+```bash Image Detection
+curl -X POST "https://api.scam.ai/api/defence/faceswap/predict" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -F "files=@/path/to/your/image.png"
 ```
 
 </RequestExample>
+
+## Video Detection
+
+Detect deepfakes in video files (MP4, AVI, etc.)
+
+<RequestExample>
+
+```bash Video Detection
+curl -X POST "https://api.scam.ai/api/defence/video/detection" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -F "video=@/path/to/your/video.mp4"
+```
+
+</RequestExample>
+
+## Parameters
+
+### Image Detection
+- **files**: Image file to analyze (required)
+- **x-api-key**: Your API key (required)
+
+### Video Detection  
+- **video**: Video file to analyze (required)
+- **x-api-key**: Your API key (required)
+
+## Response
+
+Both endpoints return a JSON response indicating whether deepfake content was detected:
+
+```json
+{
+  "is_deepfake": true,
+  "confidence": 0.87,
+  "processing_time_ms": 1250
+}
+```
