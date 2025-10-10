@@ -1,58 +1,46 @@
 ---
 title: "Deepfake Detection"
-openapi: "POST /faceswap/detect"
 ---
 
-## Overview
-
-Detect deepfakes and face-swapped content in images and videos using our AI-powered detection system.
+Detect face-swapped and deepfake content in images and videos.
 
 ## Image Detection
 
-Detect deepfakes in image files (JPEG, PNG, etc.)
-
-<RequestExample>
-
-```bash Image Detection
+```bash
 curl -X POST "https://api.scam.ai/api/defence/faceswap/predict" \
   -H "x-api-key: YOUR_API_KEY" \
   -F "files=@/path/to/your/image.png"
 ```
 
-</RequestExample>
-
 ## Video Detection
 
-Detect deepfakes in video files (MP4, AVI, etc.)
-
-<RequestExample>
-
-```bash Video Detection
+```bash
 curl -X POST "https://api.scam.ai/api/defence/video/detection" \
   -H "x-api-key: YOUR_API_KEY" \
   -F "video=@/path/to/your/video.mp4"
 ```
 
-</RequestExample>
-
-## Parameters
-
-### Image Detection
-- **files**: Image file to analyze (required)
-- **x-api-key**: Your API key (required)
-
-### Video Detection  
-- **video**: Video file to analyze (required)
-- **x-api-key**: Your API key (required)
-
 ## Response
-
-Both endpoints return a JSON response indicating whether deepfake content was detected:
 
 ```json
 {
-  "is_deepfake": true,
-  "confidence": 0.87,
-  "processing_time_ms": 1250
+  "task_id": "<string>",
+  "timestamp": "2023-11-07T05:31:56Z",
+  "detection_result": {
+    "overall_status": "NOT_DETECTED",
+    "overall_confidence_score": 0.67,
+    "face_detections": [
+      {
+        "filter_prob": 123,
+        "faceswap_prob": 123,
+        "bounding_box": [
+          30,
+          60,
+          150,
+          180
+        ]
+      }
+    ]
+  }
 }
 ```

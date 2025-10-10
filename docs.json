@@ -14,85 +14,53 @@
 
 
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "pages": [
-              "introduction"
-            ]
-          },
-          {
-            "group": "Deepfake Detection",
-            "pages": [
-              "deepfake/introduction",
-              "deepfake/detect"
-            ]
-          },
-          {
-            "group": "Voice Clone Detection",
-            "pages": [
-              "voice-clone/introduction",
-              "voice-clone/detect"
-            ]
-          },
-          {
-            "group": "GenAI Content Detection",
-            "pages": [
-              "detection/genai-content"
-            ]
-          },
-          {
-            "group": "URL & QR Code Detection",
-            "pages": [
-              "detection/text-and-links"
-            ]
-          }
+        "group": "Getting Started",
+        "pages": [
+          "introduction"
         ]
       },
       {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "GenAI Detection",
-            "pages": [
-              "api-reference/endpoint/predict",
-              "api-reference/endpoint/ai-content-detection"
-            ]
-          },
-          {
-            "group": "Deepfake Detection",
-            "pages": [
-              "api-reference/endpoint/faceswap-detection"
-            ]
-          },
-          {
-            "group": "Voice Clone Detection",
-            "pages": [
-              "api-reference/endpoint/voice-clone-detection"
-            ]
-          },
-          {
-            "group": "URL & QR Code Detection",
-            "pages": [
-              "api-reference/endpoint/url-detection",
-              "api-reference/endpoint/qr-code-detection"
-            ]
-          }
+        "group": "Deepfake Detection",
+        "pages": [
+          "deepfake/introduction",
+          "api-reference/endpoint/faceswap-detection"
+        ]
+      },
+      {
+        "group": "Voice Clone Detection", 
+        "pages": [
+          "voice-clone/introduction",
+          "api-reference/endpoint/voice-clone-detection"
+        ]
+      },
+      {
+        "group": "GenAI Content Detection",
+        "pages": [
+          "detection/genai-content",
+          "api-reference/endpoint/predict",
+          "api-reference/endpoint/ai-content-detection"
+        ]
+      },
+      {
+        "group": "URL & QR Code Detection",
+        "pages": [
+          "detection/text-and-links",
+          "api-reference/endpoint/url-detection",
+          "api-reference/endpoint/qr-code-detection"
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "LinkedIn",
-          "href": "https://www.linkedin.com/company/scam-ai",
-          "icon": "linkedin"
-        }
-      ]
-    }
+    ]
+  },
+  "global": {
+    "anchors": [
+      {
+        "anchor": "LinkedIn",
+        "href": "https://www.linkedin.com/company/scam-ai",
+        "icon": "linkedin"
+      }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
