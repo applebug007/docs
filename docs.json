@@ -22,31 +22,27 @@
         ]
       },
       {
-        "group": "Deepfake Detection",
+        "group": "Deepfakes",
         "pages": [
-          "deepfake/introduction",
           "api-reference/endpoint/faceswap-detection"
         ]
       },
       {
-        "group": "Voice Clone Detection", 
+        "group": "Voice Clones", 
         "pages": [
-          "voice-clone/introduction",
           "api-reference/endpoint/voice-clone-detection"
         ]
       },
       {
-        "group": "GenAI Content Detection",
+        "group": "GenAI Content",
         "pages": [
-          "detection/genai-content",
           "api-reference/endpoint/predict",
           "api-reference/endpoint/ai-content-detection"
         ]
       },
       {
-        "group": "URL & QR Code Detection",
+        "group": "URLs & QR Codes",
         "pages": [
-          "detection/text-and-links",
           "api-reference/endpoint/url-detection",
           "api-reference/endpoint/qr-code-detection"
         ]
