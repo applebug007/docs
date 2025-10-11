@@ -36,8 +36,7 @@
       {
         "group": "GenAI Content",
         "pages": [
-          "api-reference/endpoint/predict",
-          "api-reference/endpoint/ai-content-detection"
+          "api-reference/endpoint/predict"
         ]
       },
       {
